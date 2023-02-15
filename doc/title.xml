@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This is an automatically generated file. -->
+<TitlePage>
+  <Title>
+    ProgressBar
+  </Title>
+  <Subtitle>
+    The &GAP; package ProgressBar displays the progression of an iteration in the terminal.
+  </Subtitle>
+  <Version>
+    0.1
+  </Version>
+  <Author>
+    Friedrich Rober<Alt Only="LaTeX"><Br/></Alt>
+<Email>friedrich.rober@rwth-aachen.de</Email>
+
+  </Author>
+  <Date>
+    15 February 2023
+  </Date>
+  </TitlePage>

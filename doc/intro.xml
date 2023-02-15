@@ -1,0 +1,51 @@
+<Chapter Label="Intro">
+<Heading>Introduction</Heading>
+
+This chapter serves as an introduction to the package &ProgressBar;.
+
+<Section Label="Intro Example">
+<Heading>Example</Heading>
+
+The progress bar refreshes the line in the terminal after each iteration.
+Before the start of an iteration process we call <F>StartProgress</F>,
+then after each iteration step we call <F>PrintProgress</F>,
+and after the end of an iteration process we call <F>EndProgress</F>.
+
+<Example><![CDATA[
+gap> LoadPackage("ProgressBar");;
+gap> nrIterations := 17;
+gap> StartProgress();
+gap> for i in [1 .. nrIterations] do
+>      Sleep(1);
+>      PrintProgress(i, nrIterations);
+>    od;
+[================================================] 100% | 17/17 | eta 0:00:00
+gap> EndProgress();
+Terminated after 0:00:19
+]]></Example>
+
+In the above example we might encounter the following outputs during the execution of the iteration.
+<Example><![CDATA[
+[========----------------------------------------]  17% |  3/17 | eta 0:00:17
+[===================-----------------------------]  41% |  7/17 | eta 0:00:11
+[===============================-----------------]  64% | 11/17 | eta 0:00:06
+[==========================================------]  88% | 15/17 | eta 0:00:02
+[================================================] 100% | 17/17 | eta 0:00:00
+]]></Example>
+
+</Section>
+
+<Section Label="Progress Functions">
+<Heading>Progress Functions</Heading>
+
+<#Include Label="StartProgress">
+
+<#Include Label="PrintProgress">
+
+<#Include Label="EndProgress">
+
+</Section>
+
+<!-- ############################################################ -->
+
+</Chapter>
