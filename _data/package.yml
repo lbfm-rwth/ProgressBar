@@ -42,12 +42,13 @@ citeas: |
 bibtex: |
     @misc{ ProgressBar0.1,
       author =           {Rober, F.},
-      title =            {{ProgressBar}, The GAP package ProgressBar displays the progression of an
-                          iteration in the terminal., {V}ersion 0.1},
+      title =            {{ProgressBar},  The  GAP  package ProgressBar displays
+                          the  progression  of  an  iteration  in the terminal.,
+                          {V}ersion 0.1},
       month =            {Feb},
       year =             {2023},
       note =             {GAP package},
-      howpublished =     {\href                          {https://lbfm-rwth.github.io/ProgressBar/}
+      howpublished =     {\href       {https://lbfm-rwth.github.io/ProgressBar/}
                           {\texttt{https://lbfm-rwth.github.io/}\discretionary
                           {}{}{}\texttt{ProgressBar/}}},
       printedkey =       {Rob23}

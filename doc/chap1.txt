@@ -1,7 +1,7 @@
   
   [1X1 [33X[0;0YIntroduction[133X[101X
   
-  [33X[0;0YThis chapter serves as an introduction for the package [5XProgressBar[105X.[133X
+  [33X[0;0YThis chapter serves as an introduction to the package [5XProgressBar[105X.[133X
   
   
   [1X1.1 [33X[0;0YExample[133X[101X

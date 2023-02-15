@@ -9,7 +9,7 @@ The GAP package ProgressBar displays the progression of an iteration in the term
 ## Installation
 
 **1.** To get the newest version of this GAP 4 package download the archive file `ProgressBar-x.x.tar.gz` from
->   <https://FriedrichRober.github.io/WPE/>
+>   <https://lbfm-rwth.github.io/ProgressBar/>
 
 **2.** Locate a `pkg/` directory where GAP searches for packages, see
 >   [9.2 GAP Root Directories](https://www.gap-system.org/Manuals/doc/ref/chap9.html#X7A4973627A5DB27D)
