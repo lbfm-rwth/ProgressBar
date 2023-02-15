@@ -1,0 +1,60 @@
+  
+  [1X1 [33X[0;0YIntroduction[133X[101X
+  
+  [33X[0;0YThis chapter serves as an introduction for the package [5XProgressBar[105X.[133X
+  
+  
+  [1X1.1 [33X[0;0YExample[133X[101X
+  
+  [33X[0;0YThe  progress  bar  refreshes the line in the terminal after each iteration.
+  Before  the  start of an iteration process we call [11XStartProgress[111X, then after
+  each iteration step we call [11XPrintProgress[111X, and after the end of an iteration
+  process we call [11XEndProgress[111X.[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
+    [4X[25Xgap>[125X [27XnrIterations := 17;[127X[104X
+    [4X[25Xgap>[125X [27XStartProgress();[127X[104X
+    [4X[25Xgap>[125X [27Xfor i in [1 .. nrIterations] do[127X[104X
+    [4X[25X>[125X [27X     Sleep(1);[127X[104X
+    [4X[25X>[125X [27X     PrintProgress(i, nrIterations);[127X[104X
+    [4X[25X>[125X [27X   od;[127X[104X
+    [4X[28X[================================================] 100% | 17/17 | eta 0:00:00[128X[104X
+    [4X[25Xgap>[125X [27XEndProgress();[127X[104X
+    [4X[28XTerminated after 0:00:19[128X[104X
+  [4X[32X[104X
+  
+  [33X[0;0YIn  the  above  example  we might encounter the following outputs during the
+  execution of the iteration.[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[28X[========----------------------------------------]  17% |  3/17 | eta 0:00:17[128X[104X
+    [4X[28X[===================-----------------------------]  41% |  7/17 | eta 0:00:11[128X[104X
+    [4X[28X[===============================-----------------]  64% | 11/17 | eta 0:00:06[128X[104X
+    [4X[28X[==========================================------]  88% | 15/17 | eta 0:00:02[128X[104X
+    [4X[28X[================================================] 100% | 17/17 | eta 0:00:00[128X[104X
+  [4X[32X[104X
+  
+  
+  [1X1.2 [33X[0;0YProgress Functions[133X[101X
+  
+  [1X1.2-1 StartProgress[101X
+  
+  [33X[1;0Y[29X[2XStartProgress[102X(  ) [32X function[133X
+  
+  [33X[0;0YCall this function before the start of the iteration process. (see [14X1.1[114X)[133X
+  
+  [1X1.2-2 PrintProgress[101X
+  
+  [33X[1;0Y[29X[2XPrintProgress[102X( [3Xi[103X, [3XnrIterations[103X ) [32X function[133X
+  
+  [33X[0;0YCall this function at the end of the [3Xi[103X-th iteration step. (see [14X1.1[114X)[133X
+  
+  [1X1.2-3 EndProgress[101X
+  
+  [33X[1;0Y[29X[2XEndProgress[102X(  ) [32X function[133X
+  
+  [33X[0;0YCall this function after the end of the iteration process. (see [14X1.1[114X)[133X
+  
+  [33X[0;0Y [133X
+  

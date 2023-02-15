@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>GAP (ProgressBar) - Chapter 1: Introduction</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="GAPDoc2HTML" />
+<link rel="stylesheet" type="text/css" href="manual.css" />
+<script src="manual.js" type="text/javascript"></script>
+<script type="text/javascript">overwriteStyle();</script>
+</head>
+<body class="chap1"  onload="jscontent()">
+
+
+<div class="chlinktop"><span class="chlink1">Goto Chapter: </span><a href="chap0.html">Top</a>  <a href="chap1.html">1</a>  <a href="chapInd.html">Ind</a>  </div>
+
+<div class="chlinkprevnexttop">&nbsp;<a href="chap0.html">[Top of Book]</a>&nbsp;  <a href="chap0.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap0.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chapInd.html">[Next Chapter]</a>&nbsp;  </div>
+
+<p id="mathjaxlink" class="pcenter"><a href="chap1_mj.html">[MathJax on]</a></p>
+<p><a id="X7DFB63A97E67C0A1" name="X7DFB63A97E67C0A1"></a></p>
+<div class="ChapSects"><a href="chap1.html#X7DFB63A97E67C0A1">1 <span class="Heading">Introduction</span></a>
+<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap1.html#X85861B017AEEC50B">1.1 <span class="Heading">Example</span></a>
+</span>
+</div>
+<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap1.html#X82B927FE7B4F96D6">1.2 <span class="Heading">Progress Functions</span></a>
+</span>
+<div class="ContSSBlock">
+<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap1.html#X821A1302848BE941">1.2-1 StartProgress</a></span>
+<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap1.html#X7F40779279331DBB">1.2-2 PrintProgress</a></span>
+<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap1.html#X815A91107E971D68">1.2-3 EndProgress</a></span>
+</div></div>
+</div>
+
+<h3>1 <span class="Heading">Introduction</span></h3>
+
+<p>This chapter serves as an introduction for the package <strong class="pkg">ProgressBar</strong>.</p>
+
+<p><a id="X85861B017AEEC50B" name="X85861B017AEEC50B"></a></p>
+
+<h4>1.1 <span class="Heading">Example</span></h4>
+
+<p>The progress bar refreshes the line in the terminal after each iteration. Before the start of an iteration process we call <code class="file">StartProgress</code>, then after each iteration step we call <code class="file">PrintProgress</code>, and after the end of an iteration process we call <code class="file">EndProgress</code>.</p>
+
+
+<div class="example"><pre>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">LoadPackage("ProgressBar");;</span>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">nrIterations := 17;</span>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">StartProgress();</span>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">for i in [1 .. nrIterations] do</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     Sleep(1);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     PrintProgress(i, nrIterations);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">   od;</span>
+[================================================] 100% | 17/17 | eta 0:00:00
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">EndProgress();</span>
+Terminated after 0:00:19
+</pre></div>
+
+<p>In the above example we might encounter the following outputs during the execution of the iteration.</p>
+
+
+<div class="example"><pre>
+[========----------------------------------------]  17% |  3/17 | eta 0:00:17
+[===================-----------------------------]  41% |  7/17 | eta 0:00:11
+[===============================-----------------]  64% | 11/17 | eta 0:00:06
+[==========================================------]  88% | 15/17 | eta 0:00:02
+[================================================] 100% | 17/17 | eta 0:00:00
+</pre></div>
+
+<p><a id="X82B927FE7B4F96D6" name="X82B927FE7B4F96D6"></a></p>
+
+<h4>1.2 <span class="Heading">Progress Functions</span></h4>
+
+<p><a id="X821A1302848BE941" name="X821A1302848BE941"></a></p>
+
+<h5>1.2-1 StartProgress</h5>
+
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; StartProgress</code>(  )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
+<p>Call this function before the start of the iteration process. (see <a href="chap1.html#X85861B017AEEC50B"><span class="RefLink">1.1</span></a>)</p>
+
+<p><a id="X7F40779279331DBB" name="X7F40779279331DBB"></a></p>
+
+<h5>1.2-2 PrintProgress</h5>
+
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; PrintProgress</code>( <var class="Arg">i</var>, <var class="Arg">nrIterations</var> )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
+<p>Call this function at the end of the <var class="Arg">i</var>-th iteration step. (see <a href="chap1.html#X85861B017AEEC50B"><span class="RefLink">1.1</span></a>)</p>
+
+<p><a id="X815A91107E971D68" name="X815A91107E971D68"></a></p>
+
+<h5>1.2-3 EndProgress</h5>
+
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; EndProgress</code>(  )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
+<p>Call this function after the end of the iteration process. (see <a href="chap1.html#X85861B017AEEC50B"><span class="RefLink">1.1</span></a>)</p>
+
+<p> </p>
+
+
+<div class="chlinkprevnextbot">&nbsp;<a href="chap0.html">[Top of Book]</a>&nbsp;  <a href="chap0.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap0.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chapInd.html">[Next Chapter]</a>&nbsp;  </div>
+
+
+<div class="chlinkbot"><span class="chlink1">Goto Chapter: </span><a href="chap0.html">Top</a>  <a href="chap1.html">1</a>  <a href="chapInd.html">Ind</a>  </div>
+
+<hr />
+<p class="foot">generated by <a href="http://www.math.rwth-aachen.de/~Frank.Luebeck/GAPDoc">GAPDoc2HTML</a></p>
+</body>
+</html>
