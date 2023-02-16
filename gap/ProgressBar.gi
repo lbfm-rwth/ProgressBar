@@ -107,7 +107,7 @@ InstallGlobalFunction("StartProgress", function();
 end);
 
 InstallGlobalFunction("EndProgress", function();
-	Print("Terminated after ", PP_ConvertTime(PP_TotalTime));
+	Print("Terminated after ", PP_ConvertTime(PP_TotalTime), "\n");
 end);
 
 InstallGlobalFunction("PrintProgress", function(i, nrIterations)
@@ -153,4 +153,7 @@ InstallGlobalFunction("PrintProgress", function(i, nrIterations)
 	fi;
 	Print(bar_suffix);
 	Print(progress_info);
+	if i = nrIterations then
+		Print("\n");
+	fi;
 end);
