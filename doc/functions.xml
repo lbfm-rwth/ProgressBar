@@ -1,0 +1,91 @@
+<!--===========================================================================
+||||  Functions                                                            ||||
+===============================================================================
+||||  This file is part of the ProgressBar package.
+||||
+||||  This file's authors include Friedrich Rober.
+||||
+||||  Please refer to the COPYRIGHT file for details.
+||||
+||||  SPDX-License-Identifier: GPL-2.0-or-later
+===============================================================================
+============================================================================-->
+
+<Chapter Label="Functions">
+<Heading>Functions</Heading>
+
+Here we include a list of all functions that are provided to the User.<P/>
+
+<!--===========================================================================
+||||  Process Functions                                                    ||||
+============================================================================-->
+
+<Section Label="Process Functions">
+<Heading>Process Functions</Heading>
+
+<#Include Label="DeclareProcess">
+
+<#Include Label="StartProcess">
+
+<#Include Label="UpdateProcess">
+
+</Section>
+
+
+<!--===========================================================================
+||||  Display Options                                                      ||||
+============================================================================-->
+
+
+<Section Label="Display Functions">
+<Heading>Display Options</Heading>
+
+The methods <F>DeclareProcess</F>, <F>StartProcess</F> and <F>UpdateProcess</F>
+allow an optional argument <A>optrec</A> which must be a record
+and modifies the display output for the execution of only this single command. <P/>
+
+For modifying the display output globally for all subsequent executions of the above functions
+see <Ref Func="SetDisplayOptionsForProgressBar"/>. <P/>
+
+The following components of <A>optrec</A> are supported.
+
+<List>
+<Mark><C>printTotalTime</C></Mark>
+<Item>
+<K>true</K> to print total time (of root process). <P/>
+<K>false</K> to suppress total time. <E>DEFAULT</E> <P/>
+</Item>
+<Mark><C>printETA</C></Mark>
+<Item>
+<K>true</K> to print eta (expected time of arrival/completion). <E>DEFAULT</E> <P/>
+<K>false</K> to suppress eta. <P/>
+</Item>
+<Mark><C>removeChildren</C></Mark>
+<Item>
+<K>true</K> to remove child process after its termination. <E>DEFAULT</E> <P/>
+<K>false</K> to keep child process after its termination. <P/>
+</Item>
+<Mark><C>highlightCurStep</C></Mark>
+<Item>
+<K>true</K> to highlight current process. <P/>
+<K>false</K> to suppress highlighting. <E>DEFAULT</E> <P/>
+</Item>
+<Mark><C>highlightColor</C></Mark>
+<Item>
+<K>"red"</K> for higlighting in red color. <E>DEFAULT</E> <P/>
+<K>"blue"</K> for higlighting in blue color. <P/>
+</Item>
+</List>
+
+<#Include Label="DisplayOptionsForProgressBar">
+
+<#Include Label="SetDisplayOptionsForProgressBar">
+
+<#Include Label="ResetDisplayOptionsForProgressBar">
+
+</Section>
+
+<!--===========================================================================
+============================================================================-->
+
+</Chapter>

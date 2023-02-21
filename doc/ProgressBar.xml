@@ -11,6 +11,7 @@
 <TableOfContents/>
 <Body>
 <#Include SYSTEM "intro.xml">
+<#Include SYSTEM "functions.xml">
 <#Include SYSTEM "_AutoDocMainFile.xml">
 </Body>
 <TheIndex/>
