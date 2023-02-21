@@ -1,5 +1,5 @@
 #
-# ProgressBar: The GAP package ProgressBar displays the progression of an iteration in the terminal.
+# ProgressBar: The GAP package ProgressBar displays the progression of a process in the terminal.
 #
 # Reading the declaration part of the package.
 #

@@ -4,7 +4,7 @@
 
 # The GAP package ProgressBar
 
-The GAP package ProgressBar displays the progression of an iteration in the terminal.
+The GAP package ProgressBar displays the progression of a process in the terminal.
 
 ## Installation
 
