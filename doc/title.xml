@@ -9,7 +9,7 @@
     The &GAP; package ProgressBar displays the progression of an iteration in the terminal.
   </Subtitle>
   <Version>
-    0.1
+    0.2
   </Version>
   <Author>
     Friedrich Rober<Alt Only="LaTeX"><Br/></Alt>
@@ -17,6 +17,6 @@
 
   </Author>
   <Date>
-    15 February 2023
+    22 February 2023
   </Date>
   </TitlePage>
