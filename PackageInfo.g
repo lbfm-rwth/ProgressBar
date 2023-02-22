@@ -10,7 +10,7 @@ SetPackageInfo( rec(
 
 PackageName := "ProgressBar",
 Subtitle := "The GAP package ProgressBar displays the progression of an iteration in the terminal.",
-Version := "0.2",
+Version := "0.3",
 Date := "22/02/2023", # dd/mm/yyyy format
 License := "GPL-2.0-or-later",
 
@@ -65,7 +65,7 @@ PackageDoc := rec(
 
 Dependencies := rec(
   GAP := ">= 4.11",
-  NeededOtherPackages := [ ],
+  NeededOtherPackages := [["io", "4.7.3"]],
   SuggestedOtherPackages := [ ],
   ExternalConditions := [ ],
 ),

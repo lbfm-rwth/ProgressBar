@@ -1,5 +1,5 @@
 name: ProgressBar
-version: "0.2"
+version: "0.3"
 license: "GPL-2.0-or-later"
 date: 2023-02-22
 description: |
@@ -15,13 +15,18 @@ maintainers:
 
 GAP: ">= 4.11"
 
+needed-pkgs:
+    - name: "io"
+      version: "4.7.3"
+      url: "https://gap-packages.github.io/io"
+
 www: https://lbfm-rwth.github.io/ProgressBar/
 readme: README.md
 packageinfo: https://lbfm-rwth.github.io/ProgressBar/PackageInfo.g
 
 downloads:
     - name: .tar.gz
-      url: https://github.com/lbfm-rwth/ProgressBar/releases/download/v0.2/ProgressBar-0.2.tar.gz
+      url: https://github.com/lbfm-rwth/ProgressBar/releases/download/v0.3/ProgressBar-0.3.tar.gz
 
 abstract: |
 
@@ -32,7 +37,7 @@ citeas: |
     <p class='BibEntry'>
     [<span class='BibKey'>Rob23</span>]   <b class='BibAuthor'>Rober, F.</b>,
      <i class='BibTitle'>ProgressBar, The GAP package ProgressBar displays the progression of an iteration in the terminal.,
-             Version 0.2</i>
+             Version 0.3</i>
      (<span class='BibYear'>2023</span>)<br />
     (<span class='BibNote'>GAP package</span>),
     <span class='BibHowpublished'><a href="https://lbfm-rwth.github.io/ProgressBar/">https://lbfm-rwth.github.io/ProgressBar/</a></span>.
@@ -40,11 +45,11 @@ citeas: |
     
 
 bibtex: |
-    @misc{ ProgressBar0.2,
+    @misc{ ProgressBar0.3,
       author =           {Rober, F.},
       title =            {{ProgressBar},  The  GAP  package ProgressBar displays
                           the  progression  of  an  iteration  in the terminal.,
-                          {V}ersion 0.2},
+                          {V}ersion 0.3},
       month =            {Feb},
       year =             {2023},
       note =             {GAP package},
