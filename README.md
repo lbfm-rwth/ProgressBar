@@ -6,9 +6,24 @@
 
 The GAP package ProgressBar displays the progression of a process in the terminal.
 
-## Demonstration
+## Demonstration : Loop
+
+A demonstration of the simplest use case of the package,
+namely displaying the process of a loop.
 
 ![](https://github.com/lbfm-rwth/ProgressBar/blob/main/gif/loop.gif)
+
+## Demonstration : Steps
+
+A demonstration of displaying the progress inside a function.
+
+![](https://github.com/lbfm-rwth/ProgressBar/blob/main/gif/steps.gif)
+
+## Demonstration : Tree
+
+A demonstration of displaying a progress tree
+
+![](https://github.com/lbfm-rwth/ProgressBar/blob/main/gif/tree.gif)
 
 ## Installation
 
