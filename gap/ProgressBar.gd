@@ -123,7 +123,7 @@ DeclareGlobalFunction( "UpdateProcess" );
 
 DeclareGlobalFunction( "PB_ResetProcess" );
 DeclareGlobalFunction( "PB_FindProcess" );
-DeclareGlobalFunction( "PB_AddBranch" );
+DeclareGlobalFunction( "PB_AddBranchToChildren" );
 DeclareGlobalFunction( "PB_ProcessTime" );
 DeclareGlobalFunction( "PB_MaxProcess" );
 DeclareGlobalFunction( "PB_PrintProgress" );
