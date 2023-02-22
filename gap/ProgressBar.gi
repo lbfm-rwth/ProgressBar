@@ -44,18 +44,11 @@ BindGlobal("PB_StrNum", function(x, n)
 	return Concatenation(Concatenation(ListWithIdenticalEntries(n - nr_digits, "0")), String(x));
 end);
 
-# returns time in milliseconds after epoch
+# returns time in milliseconds after 1.1.1970, 0:00 GMT
 BindGlobal("PB_GetTime", function()
-	local path, python, t, out;
-
-	path := DirectoriesSystemPrograms();
-	python := Filename(path, "python");
-	t := "";;
-	out := OutputTextString(t, true);;
-	Process(DirectoryCurrent(), python, InputTextNone(), out, ["-c", "from time import time; print(int(round(time() * 1000)))"]);
-	CloseStream(out);
-	NormalizeWhitespace(t);
-	return Int(t);
+	local r;
+	r := IO_gettimeofday();
+	return r.tv_sec * 1000 + Int(r.tv_usec * 0.001);
 end);
 
 # returns string representation of a time given in milliseconds.
