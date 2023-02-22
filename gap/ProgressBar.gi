@@ -332,16 +332,16 @@ InstallGlobalFunction("PB_ResetProcess", function(process)
 	od;
 end);
 
-InstallGlobalFunction("PB_AddBranch", function(process, level)
+InstallGlobalFunction("PB_AddBranchToChildren", function(process, level)
 	local child;
 	for child in process.children do
-		Add(child.branches, level);
-		PB_AddBranch(child, level);
+		AddSet(child.branches, level);
+		PB_AddBranchToChildren(child, level);
 	od;
 end);
 
 InstallGlobalFunction("DeclareProcess", function(args...)
-	local root, nrSteps, parent, id, title, displayOptions, options, process, child, pos;
+	local root, nrSteps, parent, id, title, displayOptions, options, process, child, pos, branch;
 
 	# process arguments
 	root := PB_Process;
@@ -392,12 +392,30 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 		PB_NrLines := 0;
 		PB_Process := process;
 	else
-		process.level := parent.level + 1;
-		for child in parent.children do
-			PB_AddBranch(child, process.level);
-		od;
-		pos := PositionProperty(parent.children, child -> child.title = title);
+		pos := PositionProperty(parent.children, child -> child.id = id);
 		if pos = fail then
+			process.level := parent.level + 1;
+			# Situation: We need to update the children of all siblings
+			# | parent
+			#    | parent.child
+			#       | parent.child.child
+			#    | process
+			for child in parent.children do
+				PB_AddBranchToChildren(child, process.level);
+			od;
+			# Situation: We need to update ourselves
+			# | parent.parent
+			#    | parent
+			#       | process
+			#    | parent.parent.child
+			if parent.parent <> fail then
+				if PositionProperty(parent.parent.children, child -> child.id = parent.id) < Length(parent.parent.children) then
+					AddSet(process.branches, parent.level);
+					for branch in parent.branches do
+						AddSet(process.branches, branch);
+					od;
+				fi;
+			fi;
 			Add(parent.children, process);
 		else
 			process := parent.children[pos];
