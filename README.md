@@ -6,6 +6,10 @@
 
 The GAP package ProgressBar displays the progression of a process in the terminal.
 
+## Demonstration
+
+![](https://github.com/lbfm-rwth/ProgressBar/blob/main/gif/loop.gif)
+
 ## Installation
 
 **1.** To get the newest version of this GAP 4 package download the archive file `ProgressBar-x.x.tar.gz` from
