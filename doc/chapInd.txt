@@ -2,9 +2,12 @@
   
   [1XIndex[101X
   
-  [2XEndProgress[102X 1.2-3 
-  [2XPrintProgress[102X 1.2-2 
-  [2XStartProgress[102X 1.2-1 
+  [2XDeclareProcess[102X 2.1-1 
+  [2XDisplayOptionsForProgressBar[102X 2.2-1 
+  [2XResetDisplayOptionsForProgressBar[102X 2.2-3 
+  [2XSetDisplayOptionsForProgressBar[102X 2.2-2 
+  [2XStartProcess[102X 2.1-2  2.1-2 
+  [2XUpdateProcess[102X 2.1-3  2.1-3 
   
   
   -------------------------------------------------------

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>GAP (ProgressBar) - Chapter 2: Functions</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="GAPDoc2HTML" />
+<link rel="stylesheet" type="text/css" href="manual.css" />
+<script src="manual.js" type="text/javascript"></script>
+<script type="text/javascript">overwriteStyle();</script>
+</head>
+<body class="chap2"  onload="jscontent()">
+
+
+<div class="chlinktop"><span class="chlink1">Goto Chapter: </span><a href="chap0.html">Top</a>  <a href="chap1.html">1</a>  <a href="chap2.html">2</a>  <a href="chapInd.html">Ind</a>  </div>
+
+<div class="chlinkprevnexttop">&nbsp;<a href="chap0.html">[Top of Book]</a>&nbsp;  <a href="chap0.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap1.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chapInd.html">[Next Chapter]</a>&nbsp;  </div>
+
+<p id="mathjaxlink" class="pcenter"><a href="chap2_mj.html">[MathJax on]</a></p>
+<p><a id="X86FA580F8055B274" name="X86FA580F8055B274"></a></p>
+<div class="ChapSects"><a href="chap2.html#X86FA580F8055B274">2 <span class="Heading">Functions</span></a>
+<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap2.html#X7CF235C58050736F">2.1 <span class="Heading">Process Functions</span></a>
+</span>
+<div class="ContSSBlock">
+<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap2.html#X871490BF879F0EB7">2.1-1 DeclareProcess</a></span>
+<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap2.html#X79F5706384867D0D">2.1-2 StartProcess</a></span>
+<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap2.html#X7FBD50637D158208">2.1-3 UpdateProcess</a></span>
+</div></div>
+<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap2.html#X87486FA181A0C09E">2.2 <span class="Heading">Display Options</span></a>
+</span>
+<div class="ContSSBlock">
+<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap2.html#X7A79B6B47AC8754A">2.2-1 DisplayOptionsForProgressBar</a></span>
+<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap2.html#X7B2409CE7F0C66E1">2.2-2 SetDisplayOptionsForProgressBar</a></span>
+<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap2.html#X7E83CF847EAFC6E3">2.2-3 ResetDisplayOptionsForProgressBar</a></span>
+</div></div>
+</div>
+
+<h3>2 <span class="Heading">Functions</span></h3>
+
+<p>Here we include a list of all functions that are provided to the User.</p>
+
+<p><a id="X7CF235C58050736F" name="X7CF235C58050736F"></a></p>
+
+<h4>2.1 <span class="Heading">Process Functions</span></h4>
+
+<p><a id="X871490BF879F0EB7" name="X871490BF879F0EB7"></a></p>
+
+<h5>2.1-1 DeclareProcess</h5>
+
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; DeclareProcess</code>( <var class="Arg">nrSteps</var>[, <var class="Arg">parent</var>, <var class="Arg">id</var>][, <var class="Arg">title</var>][, <var class="Arg">optrec</var>] )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
+<p>Call this function to declare a process.</p>
+
+<p>Returns the declared process. (see Chapter <a href="chap1.html#X7DFB63A97E67C0A1"><span class="RefLink">1</span></a> for examples)</p>
+
+<p>The argument <var class="Arg">nrSteps</var> indicates the number of steps needed for the process to terminate. If just called with the argument <var class="Arg">nrSteps</var>, the process will be declared as the root and be given an automatic id.</p>
+
+<p>The optional argument <var class="Arg">parent</var> must either be a process record, the id (string) of a valid process, or <code class="code">fail</code> to declare the process as the root.</p>
+
+<p>The optional argument <var class="Arg">id</var> must be a unique string for the process.</p>
+
+<p>The optional argument <var class="Arg">title</var> must be a string or <code class="code">fail</code>. If specified, the title will be printed in the progress bar.</p>
+
+<p>The optional argument <var class="Arg">optrec</var> must be a record with components that are valid display options. (see <a href="chap2.html#X87486FA181A0C09E"><span class="RefLink">2.2</span></a>)</p>
+
+<p><a id="X79F5706384867D0D" name="X79F5706384867D0D"></a></p>
+
+<h5>2.1-2 StartProcess</h5>
+
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; StartProcess</code>( <var class="Arg">process</var> )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; StartProcess</code>( <var class="Arg">nrSteps</var>[, <var class="Arg">parent</var>, <var class="Arg">id</var>][, <var class="Arg">title</var>][, <var class="Arg">optrec</var>] )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
+<p>Call this function before the start of a process. (For example exactly in the line above the <code class="code">for</code> keyword in a loop)</p>
+
+<p>Returns the started process (see Chapter <a href="chap1.html#X7DFB63A97E67C0A1"><span class="RefLink">1</span></a> for examples)</p>
+
+<p>If the process has already been declared, one can call this function with only one argument <var class="Arg">process</var>, which must be either a process record or the id (string) of a valid process. Otherwise one has to use the function with arguments as specified in <code class="func">DeclareProcess</code> (<a href="chap2.html#X871490BF879F0EB7"><span class="RefLink">2.1-1</span></a>) to declare the process.</p>
+
+<p><a id="X7FBD50637D158208" name="X7FBD50637D158208"></a></p>
+
+<h5>2.1-3 UpdateProcess</h5>
+
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; UpdateProcess</code>(  )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; UpdateProcess</code>( <var class="Arg">process</var>[, <var class="Arg">title</var>][, <var class="Arg">optrec</var>] )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
+<p>Call this function at the end of a step of the given process. (For example exactly in the line above the <code class="code">od;</code> keyword in a loop)</p>
+
+<p>Returns the updated process (see Chapter <a href="chap1.html#X7DFB63A97E67C0A1"><span class="RefLink">1</span></a> for examples)</p>
+
+<p>The optional argument <var class="Arg">process</var> must either be a process record or the id (string) of a valid process.</p>
+
+<p>If not specified, <var class="Arg">process</var> will be set to the root process. The optional argument <var class="Arg">title</var> must be string or <code class="code">fail</code>. If specified, the title of the process gets updated and will be printed in the prograss bar.</p>
+
+<p>The optional argument <var class="Arg">optrec</var> must be a record with components that are valid display options. (see Section <a href="chap2.html#X87486FA181A0C09E"><span class="RefLink">2.2</span></a>)</p>
+
+<p><a id="X87486FA181A0C09E" name="X87486FA181A0C09E"></a></p>
+
+<h4>2.2 <span class="Heading">Display Options</span></h4>
+
+<p>The methods <code class="file">DeclareProcess</code>, <code class="file">StartProcess</code> and <code class="file">UpdateProcess</code> allow an optional argument <var class="Arg">optrec</var> which must be a record and modifies the display output for the execution of only this single command.</p>
+
+<p>For modifying the display output globally for all subsequent executions of the above functions see <code class="func">SetDisplayOptionsForProgressBar</code> (<a href="chap2.html#X7B2409CE7F0C66E1"><span class="RefLink">2.2-2</span></a>).</p>
+
+<p>The following components of <var class="Arg">optrec</var> are supported.</p>
+
+
+<dl>
+<dt><strong class="Mark"><code class="code">printTotalTime</code></strong></dt>
+<dd><p><code class="keyw">true</code> to print total time (of root process).</p>
+
+<p><code class="keyw">false</code> to suppress total time. <em>DEFAULT</em></p>
+
+</dd>
+<dt><strong class="Mark"><code class="code">printETA</code></strong></dt>
+<dd><p><code class="keyw">true</code> to print eta (expected time of arrival/completion). <em>DEFAULT</em></p>
+
+<p><code class="keyw">false</code> to suppress eta.</p>
+
+</dd>
+<dt><strong class="Mark"><code class="code">removeChildren</code></strong></dt>
+<dd><p><code class="keyw">true</code> to remove child process after its termination. <em>DEFAULT</em></p>
+
+<p><code class="keyw">false</code> to keep child process after its termination.</p>
+
+</dd>
+<dt><strong class="Mark"><code class="code">highlightCurStep</code></strong></dt>
+<dd><p><code class="keyw">true</code> to highlight current process.</p>
+
+<p><code class="keyw">false</code> to suppress highlighting. <em>DEFAULT</em></p>
+
+</dd>
+<dt><strong class="Mark"><code class="code">highlightColor</code></strong></dt>
+<dd><p><code class="keyw">"red"</code> for higlighting in red color. <em>DEFAULT</em></p>
+
+<p><code class="keyw">"blue"</code> for higlighting in blue color.</p>
+
+</dd>
+</dl>
+<p><a id="X7A79B6B47AC8754A" name="X7A79B6B47AC8754A"></a></p>
+
+<h5>2.2-1 DisplayOptionsForProgressBar</h5>
+
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; DisplayOptionsForProgressBar</code>(  )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
+<p>prints the current global display options for progress bar.</p>
+
+<p><a id="X7B2409CE7F0C66E1" name="X7B2409CE7F0C66E1"></a></p>
+
+<h5>2.2-2 SetDisplayOptionsForProgressBar</h5>
+
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; SetDisplayOptionsForProgressBar</code>( <var class="Arg">optrec</var> )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
+<p>sets the current global display options for progress bar.</p>
+
+<p>The argument <var class="Arg">optrec</var> must be a record with components that are valid display options. (see <a href="chap2.html#X87486FA181A0C09E"><span class="RefLink">2.2</span></a>) The components for the current global display options are set to the values specified by the components in <var class="Arg">optrec</var>.</p>
+
+<p><a id="X7E83CF847EAFC6E3" name="X7E83CF847EAFC6E3"></a></p>
+
+<h5>2.2-3 ResetDisplayOptionsForProgressBar</h5>
+
+<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; ResetDisplayOptionsForProgressBar</code>(  )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
+<p>resets the current global display options for progress bar to default.</p>
+
+<p> </p>
+
+
+<div class="chlinkprevnextbot">&nbsp;<a href="chap0.html">[Top of Book]</a>&nbsp;  <a href="chap0.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap1.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chapInd.html">[Next Chapter]</a>&nbsp;  </div>
+
+
+<div class="chlinkbot"><span class="chlink1">Goto Chapter: </span><a href="chap0.html">Top</a>  <a href="chap1.html">1</a>  <a href="chap2.html">2</a>  <a href="chapInd.html">Ind</a>  </div>
+
+<hr />
+<p class="foot">generated by <a href="http://www.math.rwth-aachen.de/~Frank.Luebeck/GAPDoc">GAPDoc2HTML</a></p>
+</body>
+</html>

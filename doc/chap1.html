@@ -15,92 +15,217 @@
 <body class="chap1"  onload="jscontent()">
 
 
-<div class="chlinktop"><span class="chlink1">Goto Chapter: </span><a href="chap0.html">Top</a>  <a href="chap1.html">1</a>  <a href="chapInd.html">Ind</a>  </div>
+<div class="chlinktop"><span class="chlink1">Goto Chapter: </span><a href="chap0.html">Top</a>  <a href="chap1.html">1</a>  <a href="chap2.html">2</a>  <a href="chapInd.html">Ind</a>  </div>
 
-<div class="chlinkprevnexttop">&nbsp;<a href="chap0.html">[Top of Book]</a>&nbsp;  <a href="chap0.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap0.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chapInd.html">[Next Chapter]</a>&nbsp;  </div>
+<div class="chlinkprevnexttop">&nbsp;<a href="chap0.html">[Top of Book]</a>&nbsp;  <a href="chap0.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap0.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chap2.html">[Next Chapter]</a>&nbsp;  </div>
 
 <p id="mathjaxlink" class="pcenter"><a href="chap1_mj.html">[MathJax on]</a></p>
 <p><a id="X7DFB63A97E67C0A1" name="X7DFB63A97E67C0A1"></a></p>
 <div class="ChapSects"><a href="chap1.html#X7DFB63A97E67C0A1">1 <span class="Heading">Introduction</span></a>
-<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap1.html#X85861B017AEEC50B">1.1 <span class="Heading">Example</span></a>
+<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap1.html#X846D2BD67F36D59E">1.1 <span class="Heading">Example: Loop</span></a>
 </span>
 </div>
-<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap1.html#X82B927FE7B4F96D6">1.2 <span class="Heading">Progress Functions</span></a>
+<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap1.html#X78D14E077A09ABA3">1.2 <span class="Heading">Example: Process with Steps</span></a>
 </span>
-<div class="ContSSBlock">
-<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap1.html#X821A1302848BE941">1.2-1 StartProgress</a></span>
-<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap1.html#X7F40779279331DBB">1.2-2 PrintProgress</a></span>
-<span class="ContSS"><br /><span class="nocss">&nbsp;&nbsp;</span><a href="chap1.html#X815A91107E971D68">1.2-3 EndProgress</a></span>
-</div></div>
+</div>
+<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap1.html#X81C214217B9F1F7C">1.3 <span class="Heading">Example: Nested Loop</span></a>
+</span>
+</div>
+<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap1.html#X850B3FE57E169EC9">1.4 <span class="Heading">Example: Tree</span></a>
+</span>
+</div>
 </div>
 
 <h3>1 <span class="Heading">Introduction</span></h3>
 
 <p>This chapter serves as an introduction to the package <strong class="pkg">ProgressBar</strong>.</p>
 
-<p><a id="X85861B017AEEC50B" name="X85861B017AEEC50B"></a></p>
+<p>The main purpose of this package is to display the progression of a process in the terminal via a progress bar that refreshes in the screen after each step of the process.</p>
 
-<h4>1.1 <span class="Heading">Example</span></h4>
+<p><a id="X846D2BD67F36D59E" name="X846D2BD67F36D59E"></a></p>
 
-<p>The progress bar refreshes the line in the terminal after each iteration. Before the start of an iteration process we call <code class="file">StartProgress</code>, then after each iteration step we call <code class="file">PrintProgress</code>, and after the end of an iteration process we call <code class="file">EndProgress</code>.</p>
+<h4>1.1 <span class="Heading">Example: Loop</span></h4>
+
+<p>In the first example we show the simplest use case of the package, namely displaying the process of a loop.</p>
+
+<p>Before the start of a process we call <code class="file">StartProcess</code>, where we specify the number of steps needed to terminate. Then after the completion of each step we call <code class="file">UpdateProcess</code>.</p>
 
 
 <div class="example"><pre>
 <span class="GAPprompt">gap&gt;</span> <span class="GAPinput">LoadPackage("ProgressBar");;</span>
-<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">nrIterations := 17;</span>
-<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">StartProgress();</span>
-<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">for i in [1 .. nrIterations] do</span>
-<span class="GAPprompt">&gt;</span> <span class="GAPinput">     Sleep(1);</span>
-<span class="GAPprompt">&gt;</span> <span class="GAPinput">     PrintProgress(i, nrIterations);</span>
-<span class="GAPprompt">&gt;</span> <span class="GAPinput">   od;</span>
-[================================================] 100% | 17/17 | eta 0:00:00
-<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">EndProgress();</span>
-Terminated after 0:00:19
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">doLoop := function(n)</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     local i;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     StartProcess(n);;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     for i in [1 .. n] do</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       Sleep(1);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       UpdateProcess();</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     od;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">   end;;</span>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">doLoop(7);</span>
+ [===================================================] 100% | 7/7 | eta 0:00:00
 </pre></div>
 
-<p>In the above example we might encounter the following outputs during the execution of the iteration.</p>
+<p>In the above example we might encounter the following outputs during the execution of the iteration. All these outputs are visible in the same line of the terminal for roughly 1 second.</p>
 
 
 <div class="example"><pre>
-[========----------------------------------------]  17% |  3/17 | eta 0:00:17
-[===================-----------------------------]  41% |  7/17 | eta 0:00:11
-[===============================-----------------]  64% | 11/17 | eta 0:00:06
-[==========================================------]  88% | 15/17 | eta 0:00:02
-[================================================] 100% | 17/17 | eta 0:00:00
+ [=======--------------------------------------------]  14% | 1/7 | eta 0:00:06
+ [=====================------------------------------]  42% | 3/7 | eta 0:00:04
+ [====================================---------------]  71% | 5/7 | eta 0:00:02
+ [===================================================] 100% | 7/7 | eta 0:00:00
 </pre></div>
 
-<p><a id="X82B927FE7B4F96D6" name="X82B927FE7B4F96D6"></a></p>
+<p><a id="X78D14E077A09ABA3" name="X78D14E077A09ABA3"></a></p>
 
-<h4>1.2 <span class="Heading">Progress Functions</span></h4>
+<h4>1.2 <span class="Heading">Example: Process with Steps</span></h4>
 
-<p><a id="X821A1302848BE941" name="X821A1302848BE941"></a></p>
-
-<h5>1.2-1 StartProgress</h5>
-
-<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; StartProgress</code>(  )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
-<p>Call this function before the start of the iteration process. (see <a href="chap1.html#X85861B017AEEC50B"><span class="RefLink">1.1</span></a>)</p>
-
-<p><a id="X7F40779279331DBB" name="X7F40779279331DBB"></a></p>
-
-<h5>1.2-2 PrintProgress</h5>
-
-<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; PrintProgress</code>( <var class="Arg">i</var>, <var class="Arg">nrIterations</var> )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
-<p>Call this function at the end of the <var class="Arg">i</var>-th iteration step. (see <a href="chap1.html#X85861B017AEEC50B"><span class="RefLink">1.1</span></a>)</p>
-
-<p><a id="X815A91107E971D68" name="X815A91107E971D68"></a></p>
-
-<h5>1.2-3 EndProgress</h5>
-
-<div class="func"><table class="func" width="100%"><tr><td class="tdleft"><code class="func">&#8227; EndProgress</code>(  )</td><td class="tdright">(&nbsp;function&nbsp;)</td></tr></table></div>
-<p>Call this function after the end of the iteration process. (see <a href="chap1.html#X85861B017AEEC50B"><span class="RefLink">1.1</span></a>)</p>
-
-<p> </p>
+<p>Apart from displaying loops, the package can be used to display the progress during the execution of a function as well. We disable the display of eta (expected time of arrival/completion), since it is meaningless in this context.</p>
 
 
-<div class="chlinkprevnextbot">&nbsp;<a href="chap0.html">[Top of Book]</a>&nbsp;  <a href="chap0.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap0.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chapInd.html">[Next Chapter]</a>&nbsp;  </div>
+<div class="example"><pre>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">LoadPackage("ProgressBar");;</span>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">doSteps := function()</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     local proc, opts;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     opts := rec(printETA := false);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     proc := StartProcess(3, fail, "Process", "Doing Step 1", opts);;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     Sleep(2);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     UpdateProcess(proc, "Doing Step 2", opts);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     Sleep(4);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     UpdateProcess(proc, "Doing Step 3", opts);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     Sleep(2);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     UpdateProcess(proc, "Finished", opts);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">   end;;</span>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">doSteps();</span>
+ | Finished
+ [=================================================================] 100% | 3/3
+</pre></div>
+
+<p>In the above example we would see the following outputs before the termination of the process, each displayed in the same lines of the screen.</p>
 
 
-<div class="chlinkbot"><span class="chlink1">Goto Chapter: </span><a href="chap0.html">Top</a>  <a href="chap1.html">1</a>  <a href="chapInd.html">Ind</a>  </div>
+<div class="example"><pre>
+ | Doing Step 1
+ [-----------------------------------------------------------------]   0% | 0/3
+
+ | Doing Step 2
+ [=====================--------------------------------------------]  33% | 1/3
+
+ | Doing Step 3
+ [===========================================----------------------]  66% | 2/3
+</pre></div>
+
+<p><a id="X81C214217B9F1F7C" name="X81C214217B9F1F7C"></a></p>
+
+<h4>1.3 <span class="Heading">Example: Nested Loop</span></h4>
+
+<p>The package also supports displaying nested loops. For this we need to specify the parent-child relationships of the individual processes. We also adjust the display to show the total execution time of the root process.</p>
+
+
+<div class="example"><pre>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">LoadPackage("ProgressBar");;</span>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">doNestedLoop := function(n, m)</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     local loop1, loop2, i, j;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     SetDisplayOptionsForProgressBar(rec(printTotalTime := true));</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     loop1 := StartProcess(n, fail, "Outer Loop");;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     for i in [1 .. n] do</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       loop2 := StartProcess(m, loop1, "Inner Loop");;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       for j in [1 .. m] do</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">         Sleep(1);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">         UpdateProcess(loop2);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       od;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       UpdateProcess(loop1);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     od;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">   end;;</span>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">doNestedLoop(3, 5);</span>
+ | Total Time 0:00:17
+ [===================================================] 100% | 3/3 | eta 0:00:00
+</pre></div>
+
+<p>An example output might look like this</p>
+
+
+<div class="example"><pre>
+ | Total Time 0:00:07
+ [=================----------------------------------]  33% | 1/3 | eta 0:00:11
+   [===================------------------------------]  40% | 2/5 | eta 0:00:03
+</pre></div>
+
+<p><a id="X850B3FE57E169EC9" name="X850B3FE57E169EC9"></a></p>
+
+<h4>1.4 <span class="Heading">Example: Tree</span></h4>
+
+<p>We can also display much more intertwined processes than nested loops. For this it is recommended to use <code class="file">DeclareProcess</code> to define all parent-child relationships of the individual processes before the root process starts. We can then use <code class="file">StartProcess</code> with the id or process record to start each process.</p>
+
+<p>Additionaly, we use some display options to disable removing a child process when it terminates, and to highlight the current process that is running.</p>
+
+
+<div class="example"><pre>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">LoadPackage("ProgressBar");;</span>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">doTree := function(n, l, m, r)</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     local root, left, leftInner, i, j, k;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     SetDisplayOptionsForProgressBar(rec(</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       printTotalTime := true,</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       removeChildren := false,</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       highlightCurStep := true</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     ));</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     # Declare Process Tree</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     root := DeclareProcess(n, fail, "Root", "Root");;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     left := DeclareProcess(l, root, "left", "Left");;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     leftInner := DeclareProcess(m, "left", "leftInner", "Inner");;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     DeclareProcess(r, root, "right", "Right");;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     # Start Process</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     StartProcess(root);;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     for i in [1 .. n] do</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       StartProcess(left);;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       for j in [1 .. l] do</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">         Sleep(1);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">         StartProcess(leftInner);;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">         for k in [1.. m] do</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">           Sleep(1);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">           UpdateProcess(leftInner);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">         od;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">         UpdateProcess(left);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       od;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       StartProcess("right");;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       for j in [1 .. r] do</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">         Sleep(1);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">         UpdateProcess("right");</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       od;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">       UpdateProcess(root);</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">     od;</span>
+<span class="GAPprompt">&gt;</span> <span class="GAPinput">   end;;</span>
+<span class="GAPprompt">gap&gt;</span> <span class="GAPinput">doTree(3, 5, 2, 4);</span>
+ | Total Time 0:01:06
+ | Root
+ [===================================================] 100% | 3/3 | eta 0:00:00
+    | Left
+    [------------------------------------------------]   0% | 0/5 | eta ?:??:??
+    |  | Inner
+    |  [---------------------------------------------]   0% | 0/2 | eta ?:??:??
+    | Right
+    [------------------------------------------------]   0% | 0/4 | eta ?:??:??
+</pre></div>
+
+<p>Example output during the execution of the function:</p>
+
+
+<div class="example"><pre>
+ | Total Time 0:00:42
+ | Root
+ [=================----------------------------------]  33% | 1/3 | eta 0:00:43
+    | Left
+    [================================================] 100% | 5/5 | eta 0:00:00
+    |  | Inner
+    |  [---------------------------------------------]   0% | 0/2 | eta ?:??:??
+    | Right
+    [====================================------------]  75% | 3/4 | eta 0:00:01
+</pre></div>
+
+
+<div class="chlinkprevnextbot">&nbsp;<a href="chap0.html">[Top of Book]</a>&nbsp;  <a href="chap0.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap0.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chap2.html">[Next Chapter]</a>&nbsp;  </div>
+
+
+<div class="chlinkbot"><span class="chlink1">Goto Chapter: </span><a href="chap0.html">Top</a>  <a href="chap1.html">1</a>  <a href="chap2.html">2</a>  <a href="chapInd.html">Ind</a>  </div>
 
 <hr />
 <p class="foot">generated by <a href="http://www.math.rwth-aachen.de/~Frank.Luebeck/GAPDoc">GAPDoc2HTML</a></p>

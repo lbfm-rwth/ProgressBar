@@ -1,0 +1,127 @@
+  
+  [1X2 [33X[0;0YFunctions[133X[101X
+  
+  [33X[0;0YHere we include a list of all functions that are provided to the User.[133X
+  
+  
+  [1X2.1 [33X[0;0YProcess Functions[133X[101X
+  
+  [1X2.1-1 DeclareProcess[101X
+  
+  [33X[1;0Y[29X[2XDeclareProcess[102X( [3XnrSteps[103X[, [3Xparent[103X, [3Xid[103X][, [3Xtitle[103X][, [3Xoptrec[103X] ) [32X function[133X
+  
+  [33X[0;0YCall this function to declare a process.[133X
+  
+  [33X[0;0YReturns the declared process. (see Chapter [14X1[114X for examples)[133X
+  
+  [33X[0;0YThe argument [3XnrSteps[103X indicates the number of steps needed for the process to
+  terminate.  If  just  called  with the argument [3XnrSteps[103X, the process will be
+  declared as the root and be given an automatic id.[133X
+  
+  [33X[0;0YThe  optional  argument  [3Xparent[103X  must  either  be  a  process record, the id
+  (string) of a valid process, or [10Xfail[110X to declare the process as the root.[133X
+  
+  [33X[0;0YThe optional argument [3Xid[103X must be a unique string for the process.[133X
+  
+  [33X[0;0YThe  optional  argument  [3Xtitle[103X  must  be a string or [10Xfail[110X. If specified, the
+  title will be printed in the progress bar.[133X
+  
+  [33X[0;0YThe optional argument [3Xoptrec[103X must be a record with components that are valid
+  display options. (see [14X2.2[114X)[133X
+  
+  [1X2.1-2 StartProcess[101X
+  
+  [33X[1;0Y[29X[2XStartProcess[102X( [3Xprocess[103X ) [32X function[133X
+  [33X[1;0Y[29X[2XStartProcess[102X( [3XnrSteps[103X[, [3Xparent[103X, [3Xid[103X][, [3Xtitle[103X][, [3Xoptrec[103X] ) [32X function[133X
+  
+  [33X[0;0YCall  this  function  before the start of a process. (For example exactly in
+  the line above the [10Xfor[110X keyword in a loop)[133X
+  
+  [33X[0;0YReturns the started process (see Chapter [14X1[114X for examples)[133X
+  
+  [33X[0;0YIf  the  process  has already been declared, one can call this function with
+  only  one  argument [3Xprocess[103X, which must be either a process record or the id
+  (string)  of  a  valid  process.  Otherwise one has to use the function with
+  arguments as specified in [2XDeclareProcess[102X ([14X2.1-1[114X) to declare the process.[133X
+  
+  [1X2.1-3 UpdateProcess[101X
+  
+  [33X[1;0Y[29X[2XUpdateProcess[102X(  ) [32X function[133X
+  [33X[1;0Y[29X[2XUpdateProcess[102X( [3Xprocess[103X[, [3Xtitle[103X][, [3Xoptrec[103X] ) [32X function[133X
+  
+  [33X[0;0YCall  this  function at the end of a step of the given process. (For example
+  exactly in the line above the [10Xod;[110X keyword in a loop)[133X
+  
+  [33X[0;0YReturns the updated process (see Chapter [14X1[114X for examples)[133X
+  
+  [33X[0;0YThe  optional  argument  [3Xprocess[103X  must  either be a process record or the id
+  (string) of a valid process.[133X
+  
+  [33X[0;0YIf  not  specified,  [3Xprocess[103X  will  be set to the root process. The optional
+  argument  [3Xtitle[103X  must  be  string  or  [10Xfail[110X.  If specified, the title of the
+  process gets updated and will be printed in the prograss bar.[133X
+  
+  [33X[0;0YThe optional argument [3Xoptrec[103X must be a record with components that are valid
+  display options. (see Section [14X2.2[114X)[133X
+  
+  
+  [1X2.2 [33X[0;0YDisplay Options[133X[101X
+  
+  [33X[0;0YThe methods [11XDeclareProcess[111X, [11XStartProcess[111X and [11XUpdateProcess[111X allow an optional
+  argument  [3Xoptrec[103X  which must be a record and modifies the display output for
+  the execution of only this single command.[133X
+  
+  [33X[0;0YFor  modifying  the display output globally for all subsequent executions of
+  the above functions see [2XSetDisplayOptionsForProgressBar[102X ([14X2.2-2[114X).[133X
+  
+  [33X[0;0YThe following components of [3Xoptrec[103X are supported.[133X
+  
+  [8X[10XprintTotalTime[110X[8X[108X
+        [33X[0;6Y[9Xtrue[109X to print total time (of root process).[133X
+  
+        [33X[0;6Y[9Xfalse[109X to suppress total time. [13XDEFAULT[113X[133X
+  
+  [8X[10XprintETA[110X[8X[108X
+        [33X[0;6Y[9Xtrue[109X to print eta (expected time of arrival/completion). [13XDEFAULT[113X[133X
+  
+        [33X[0;6Y[9Xfalse[109X to suppress eta.[133X
+  
+  [8X[10XremoveChildren[110X[8X[108X
+        [33X[0;6Y[9Xtrue[109X to remove child process after its termination. [13XDEFAULT[113X[133X
+  
+        [33X[0;6Y[9Xfalse[109X to keep child process after its termination.[133X
+  
+  [8X[10XhighlightCurStep[110X[8X[108X
+        [33X[0;6Y[9Xtrue[109X to highlight current process.[133X
+  
+        [33X[0;6Y[9Xfalse[109X to suppress highlighting. [13XDEFAULT[113X[133X
+  
+  [8X[10XhighlightColor[110X[8X[108X
+        [33X[0;6Y[9X"red"[109X for higlighting in red color. [13XDEFAULT[113X[133X
+  
+        [33X[0;6Y[9X"blue"[109X for higlighting in blue color.[133X
+  
+  [1X2.2-1 DisplayOptionsForProgressBar[101X
+  
+  [33X[1;0Y[29X[2XDisplayOptionsForProgressBar[102X(  ) [32X function[133X
+  
+  [33X[0;0Yprints the current global display options for progress bar.[133X
+  
+  [1X2.2-2 SetDisplayOptionsForProgressBar[101X
+  
+  [33X[1;0Y[29X[2XSetDisplayOptionsForProgressBar[102X( [3Xoptrec[103X ) [32X function[133X
+  
+  [33X[0;0Ysets the current global display options for progress bar.[133X
+  
+  [33X[0;0YThe  argument [3Xoptrec[103X must be a record with components that are valid display
+  options. (see [14X2.2[114X) The components for the current global display options are
+  set to the values specified by the components in [3Xoptrec[103X.[133X
+  
+  [1X2.2-3 ResetDisplayOptionsForProgressBar[101X
+  
+  [33X[1;0Y[29X[2XResetDisplayOptionsForProgressBar[102X(  ) [32X function[133X
+  
+  [33X[0;0Yresets the current global display options for progress bar to default.[133X
+  
+  [33X[0;0Y [133X
+  
