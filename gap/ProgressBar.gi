@@ -19,7 +19,7 @@
 
 
 PB_Process := fail;
-PB_NrLines := 0;
+PB_State := fail;
 
 
 #############################################################################
@@ -52,7 +52,7 @@ BindGlobal("PB_GetTime", function()
 end);
 
 # returns string representation of a time given in milliseconds.
-# The string is of the form `h:min:s` e.g. `01:23:42`
+# The string is of the form `h:min:s` e.g. `1:23:42`
 # args:
 #	- t,		PosInt, time in milliseconds
 #	- printMS,	Bool, whether to print milliseconds
@@ -87,36 +87,118 @@ BindGlobal("PB_StrTime", function(args...)
 	fi;
 end);
 
-InstallGlobalFunction("PB_ProcessTime", function(process)
-	local t, child;
-	t := process.totalTime;
-	for child in process.children do
-		t := t + PB_ProcessTime(child);
-	od;
-	return t;
-end);
-
-InstallGlobalFunction("PB_MaxProcess", function(process)
-	local m, child;
-	m := process.nrSteps;
-	for child in process.children do
-		m := Maximum(m, PB_MaxProcess(child));
-	od;
-	return m;
-end);
-
-InstallGlobalFunction("PB_FindProcess", function(process, id)
+InstallGlobalFunction("PB_First", function(process, func)
 	local child, res;
-	if process.id = id then
+	if func(process) then
 		return process;
 	fi;
 	for child in process.children do
-		res := PB_FindProcess(child, id);
+		res := PB_First(child, func);
 		if res <> fail then
 			return res;
 		fi;
 	od;
 	return fail;
+end);
+
+InstallGlobalFunction("PB_Reduce", function(process, func, init)
+	local value, child;
+	value := func(init, process);
+	for child in process.children do
+		value := PB_Reduce(child, func, value);
+	od;
+	return value;
+end);
+
+InstallGlobalFunction("PB_Perform", function(process, func)
+	local child;
+	func(process);
+	for child in process.children do
+		PB_Perform(child, func);
+	od;
+end);
+
+BindGlobal("PB_ProcessTime", function(process)
+	return PB_Reduce(process, {t, proc} -> t + proc.totalTime, 0);
+end);
+
+BindGlobal("PB_ProcessMaxSteps", function(process)
+	return PB_Reduce(process, {m, proc} -> Maximum(m, proc.nrSteps), 0);
+end);
+
+BindGlobal("PB_FindProcess", function(process, id)
+	return PB_First(process, proc -> proc.id = id);
+end);
+
+# args: process[, mode]
+# mode in ["all", "upper", "lower"]
+BindGlobal("PB_Siblings", function(args...)
+	local process, mode, parent, pos, n, L;
+	process := args[1];
+	mode := "all";
+	if Length(args) > 1 then
+		mode := args[2];
+	fi;
+	parent := process.parent;
+	if parent = fail then
+		return [];
+	else
+		pos := PositionProperty(parent.children, child -> child.id = process.id);
+		n := Length(parent.children);
+		if mode = "all" then
+			L := [1 .. n];
+			Remove(L, pos);
+		elif mode = "upper" then
+			L := [1 .. pos - 1];
+		elif mode = "lower" then
+			L := [pos + 1 .. n];
+		else
+			Error("unknown mode");
+		fi;
+		return parent.children{L};
+	fi;
+end);
+
+InstallGlobalFunction("PB_LowerIncludingSelf", function(process)
+	local L, child;
+	L := [process];
+	for child in process.children do
+		Append(L, PB_LowerIncludingSelf(child));
+	od;
+	return L;
+end);
+
+BindGlobal("PB_Lower", function(process)
+	local L, child, sibling;
+	L := [];
+	for child in process.children do
+		Append(L, PB_LowerIncludingSelf(child, false));
+	od;
+	for sibling in PB_Siblings(process, "lower") do
+		Append(L, PB_LowerIncludingSelf(sibling, false));
+	od;
+	return L;
+end);
+
+InstallGlobalFunction("PB_UpperUntilCaller", function(process, caller, L)
+	local child;
+	if process.id = caller.id then
+		return true;
+	fi;
+	Add(L, process);
+	for child in process.children do
+		if PB_UpperUntilCaller(child, caller, L) then
+			return true;
+		fi;
+	od;
+	return false;
+end);
+
+BindGlobal("PB_Upper", function(process)
+	local L;
+	L := [];
+	PB_UpperUntilCaller(PB_Process, process, L);
+	return L;
 end);
 
 
@@ -161,7 +243,7 @@ function(optionsBase, optionsUpdate)
     od;
 end);
 
-BindGlobal("WPE_SetFont",
+BindGlobal("PB_SetFont",
 function(options)
     # Color
     if options.highlightColor = "red" then
@@ -188,52 +270,61 @@ end);
 #############################################################################
 
 
-BindGlobal("PB_PrintProcess", function(caller, options)
-	local root, _;
-
-	root := PB_Process;
-
-	# progress bar parameters
-	options.widthScreen := SizeScreen()[1] - 1;
-	options.nr_digits := PB_NrDigits(PB_MaxProcess(root));
-
-	# print progress bar and info
-	for _ in [1 .. PB_NrLines - 1] do
-		WriteAll(STDOut, "\033[2K"); # erase the entire line
-		WriteAll(STDOut, "\033[1A"); # moves cursor up one line
-	od;
-	WriteAll(STDOut, "\033[2K"); # erase the entire line
-	WriteAll(STDOut, "\r"); # move cursor to the start of the line
-
-	PB_NrLines := PB_PrintProgress(caller, root, options);
+# moves cursor to line n
+BindGlobal("PB_MoveCursorToLine", function(n)
+	local move;
+	if PB_State.usedLines < n then
+		move := PB_State.cursor - PB_State.usedLines;
+		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # moves cursor down X lines
+		WriteAll(STDOut, Concatenation(ListWithIdenticalEntries(n - PB_State.usedLines, "\n"))); # create X new lines
+		PB_State.usedLines := n;
+	else
+		move := PB_State.cursor - n;
+		if move > 0 then
+			WriteAll(STDOut, Concatenation("\033[", String(move), "A")); # moves cursor up X lines
+		elif move < 0 then
+			WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # moves cursor down X lines
+		fi;
+	fi;
+	PB_State.cursor := n;
 end);
 
-InstallGlobalFunction("PB_PrintProgress", function(caller, process, options)
-	local root, curStep, nrSteps, totalTime, title, level, branches, nrLines, parent, indent, i,
-	r, a, nr_digits, progress_percent, progress_ratio, progress_expected_time, progress_info,
+BindGlobal("PB_RefreshLine", function()
+	WriteAll(STDOut, "\033[2K"); # erase the entire line
+	WriteAll(STDOut, "\r"); # move cursor to the start of the line
+end);
+
+# ANSI Escape Sequences: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+InstallGlobalFunction("PB_PrintProgress", function(process)
+	local options, root, curProcess, curStep, nrSteps, totalTime, title, depth, branches, nrLines, startLine, indent, i,
+	r, a, progress_percent, progress_ratio, progress_expected_time, progress_info,
 	bar_length, bar_length_full, bar_length_empty, child;
 
 	# initialization
+	options := ShallowCopy(PB_DisplayOptions);
+	PB_SetDisplayOptions(options, process.options);
 	root := PB_Process;
+	PB_State.widthScreen := SizeScreen()[1] - 1;
+	PB_State.nr_digits := PB_NrDigits(PB_ProcessMaxSteps(root));
+	curProcess := fail;
+	if IsBound(PB_State.curProcess) then
+		curProcess := PB_State.curProcess;
+	fi;
 	curStep := process.curStep;
 	nrSteps := process.nrSteps;
 	totalTime := process.totalTime;
 	title := process.title;
-	level := process.level;
+	depth := process.depth;
 	branches := process.branches;
 	nrLines := 0;
-
-	# is process finished?
-	if curStep >= nrSteps then
-		curStep := nrSteps;
-	fi;
+	startLine := Sum(PB_Upper(process), proc -> proc.nrLines) + 1;
 
 	# init indent
-	if level = 0 then
+	if depth = 0 then
 		indent := "";
 	else
 		indent := Concatenation(ListWithIdenticalEntries(Length(options.branch), " "));
-		indent := ListWithIdenticalEntries(level, indent);
+		indent := ListWithIdenticalEntries(depth, indent);
 		for i in branches do
 			indent[i + 1] := options.branch;
 		od;
@@ -241,27 +332,34 @@ InstallGlobalFunction("PB_PrintProgress", function(caller, process, options)
 	fi;
 
 	# print headers and set font
-	if level = 0 and options.printTotalTime then
-		nrLines := nrLines + 1;
-		WriteAll(STDOut, indent);
+	# TODO: detect if option was changed during execution
+	if options.printTotalTime then
+		PB_MoveCursorToLine(1);
+		PB_RefreshLine();
 		WriteAll(STDOut, options.branch);
 		WriteAll(STDOut, "Total Time ");
 		WriteAll(STDOut, PB_StrTime(PB_ProcessTime(process)));
-		WriteAll(STDOut, "\n");
+		startLine := startLine + 1;
 	fi;
 
-	if options.highlightCurStep and process = caller and not (process = root and curStep >= nrSteps) then
-		WPE_SetFont(options);
+	# move cursor to start of the line of process
+	PB_MoveCursorToLine(startLine);
+
+	# TODO: fix this, we need to detect change in curProcess
+	if options.highlightCurStep and process = curProcess and not (process = root and curStep >= nrSteps) then
+		PB_SetFont(options);
 	else
 		WriteAll(STDOut, "\033[0m");
 	fi;
 
+	# TODO: detect if option was changed during execution
 	if title <> fail then
-		nrLines := nrLines + 1;
+		PB_RefreshLine();
 		WriteAll(STDOut, indent);
 		WriteAll(STDOut, options.branch);
 		WriteAll(STDOut, title);
 		WriteAll(STDOut, "\n");
+		nrLines := nrLines + 1;
 	fi;
 
 	# progress info
@@ -269,7 +367,7 @@ InstallGlobalFunction("PB_PrintProgress", function(caller, process, options)
 	r := curStep / nrSteps;
 	progress_percent := Concatenation(String(Int(r * 100), 3), "%");
 	Add(progress_info, progress_percent);
-	progress_ratio := Concatenation(String(curStep, options.nr_digits), "/", String(nrSteps));
+	progress_ratio := Concatenation(String(curStep, PB_State.nr_digits), "/", String(nrSteps));
 	Add(progress_info, progress_ratio);
 	if options.printETA then
 		if curStep > 0 then
@@ -283,12 +381,12 @@ InstallGlobalFunction("PB_PrintProgress", function(caller, process, options)
 	progress_info := JoinStringsWithSeparator(progress_info, options.separator);
 
 	# progress bar length
-	bar_length := options.widthScreen - Length(indent) - Length(options.bar_prefix) - Length(options.bar_suffix) - Length(progress_info);
+	bar_length := PB_State.widthScreen - Length(indent) - Length(options.bar_prefix) - Length(options.bar_suffix) - Length(progress_info);
 	bar_length_full := Int(bar_length * r);
 	bar_length_empty := bar_length - bar_length_full;
 
 	# print progress bar
-	nrLines := nrLines + 1;
+	PB_RefreshLine();
 	WriteAll(STDOut, indent);
 	WriteAll(STDOut, options.bar_prefix);
 	if bar_length_full > 0 then
@@ -299,42 +397,23 @@ InstallGlobalFunction("PB_PrintProgress", function(caller, process, options)
 	fi;
 	WriteAll(STDOut, options.bar_suffix);
 	WriteAll(STDOut, progress_info);
-
 	WriteAll(STDOut, "\033[0m");
+	nrLines := nrLines + 1;
 
-	# print progress of children
-	if options.removeChildren and process = caller then
-		process.children := [];
-	fi;
-
-	for child in process.children do
-		WriteAll(STDOut, "\n");
-		nrLines := nrLines + PB_PrintProgress(caller, child, options);
-	od;
-
-	return nrLines;
+	# update cursor
+	process.nrLines := nrLines;
+	PB_State.cursor := PB_State.cursor + nrLines - 1;
+	PB_State.usedLines := Maximum(PB_State.usedLines, startLine + nrLines - 1);
 end);
 
-InstallGlobalFunction("PB_ResetProcess", function(process)
-	local child;
-	process.totalTime := 0;
-	process.lastTime := fail;
-	process.curStep := 0;
-	for child in process.children do
-		PB_ResetProcess(child);
-	od;
-end);
 
-InstallGlobalFunction("PB_AddBranchToChildren", function(process, level)
-	local child;
-	for child in process.children do
-		AddSet(child.branches, level);
-		PB_AddBranchToChildren(child, level);
-	od;
-end);
+#############################################################################
+# Process
+#############################################################################
+
 
 InstallGlobalFunction("DeclareProcess", function(args...)
-	local root, nrSteps, parent, id, title, displayOptions, options, process, child, pos, branch;
+	local root, nrSteps, parent, id, title, displayOptions, options, process, child, grandchild, pos, branch;
 
 	# process arguments
 	root := PB_Process;
@@ -344,19 +423,24 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 	if Length(args) > 1 then
 		if IsString(args[2]) then
 			parent := PB_FindProcess(root, args[2]);
+			if parent = fail then
+				Error("Parent has not yet been declared");
+			fi;
 		else
 			parent := args[2];
 		fi;
 		id := args[3];
 	fi;
+	if root <> fail and PB_FindProcess(root, id) <> fail then
+		Error("Process has already been declared");
+	fi;
 	title := fail;
 	if Length(args) > 3 then
 		title := args[4];
 	fi;
-	displayOptions := ShallowCopy(PB_DisplayOptions);
+	options := rec();
 	if Length(args) > 4 then
 		options := args[5];
-		PB_SetDisplayOptions(displayOptions, options);
 	fi;
 
 	# create process
@@ -375,45 +459,50 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 		id := id,
 		# title of step for process
 		title := title,
-		# level of process
-		level := 0,
+		# depth of process
+		depth := 0,
 		# additional branches on the left of process
 		branches := [],
+		# number of lines used by this process
+		nrLines := 0,
+		# options of process overriding the global options
+		options := options,
 	);
 
 	if parent = fail then
-		PB_NrLines := 0;
 		PB_Process := process;
+		PB_State := rec(
+			cursor := 1,
+			usedLines := 1,
+		);
 	else
-		pos := PositionProperty(parent.children, child -> child.id = id);
-		if pos = fail then
-			process.level := parent.level + 1;
-			# Situation: We need to update the children of all siblings
-			# | parent
-			#    | parent.child
-			#       | parent.child.child
-			#    | process
-			for child in parent.children do
-				PB_AddBranchToChildren(child, process.level);
+		process.depth := parent.depth + 1;
+		# Situation: We need to update the children of all (upper) siblings
+		# | parent
+		#    | parent.child
+		#       | parent.child.child
+		#    | process
+		for child in parent.children do
+			for grandchild in child.children do
+				PB_Perform(grandchild, function(proc)
+					AddSet(proc.branches, process.depth);
+				end);
 			od;
-			# Situation: We need to update ourselves
-			# | parent.parent
-			#    | parent
-			#       | process
-			#    | parent.parent.child
-			if parent.parent <> fail then
-				if PositionProperty(parent.parent.children, child -> child.id = parent.id) < Length(parent.parent.children) then
-					AddSet(process.branches, parent.level);
-					for branch in parent.branches do
-						AddSet(process.branches, branch);
-					od;
-				fi;
+		od;
+		# Situation: We need to update ourselves
+		# | parent.parent
+		#    | parent
+		#       | process
+		#    | parent.parent.child
+		if parent.parent <> fail then
+			if PositionProperty(parent.parent.children, child -> child.id = parent.id) < Length(parent.parent.children) then
+				AddSet(process.branches, parent.depth);
+				for branch in parent.branches do
+					AddSet(process.branches, branch);
+				od;
 			fi;
-			Add(parent.children, process);
-		else
-			process := parent.children[pos];
-			PB_ResetProcess(process);
 		fi;
+		Add(parent.children, process);
 	fi;
 
 	return process;
@@ -437,20 +526,24 @@ InstallGlobalFunction("StartProcess", function(args...)
 	process.lastTime := PB_GetTime();
 
 	# print process
-	displayOptions := ShallowCopy(PB_DisplayOptions);
-	if Length(args) > 4 then
-		options := args[5];
-		PB_SetDisplayOptions(displayOptions, options);
+	if IsBound(PB_State.curProcess) and PB_State.curProcess.id <> process.id then
+		proc := PB_State.curProcess;
+		PB_State.curProcess := process;
+		PB_PrintProgress(proc);
+	else
+		PB_State.curProcess := process;
 	fi;
 
-	PB_PrintProcess(process, displayOptions);
+	PB_ResetProcess(process);
+	PB_Perform(process, function(proc)
+		PB_PrintProgress(proc);
+	end);
 
 	return process;
 end);
 
-# ANSI Escape Sequences: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
 InstallGlobalFunction("UpdateProcess", function(args...)
-	local root, process, displayOptions, options, t, dt, child;
+	local root, process, t, dt, proc, child;
 
 	# process arguments
 	root := PB_Process;
@@ -465,31 +558,52 @@ InstallGlobalFunction("UpdateProcess", function(args...)
 	if Length(args) > 1 then
 		process.title := args[2];
 	fi;
-    displayOptions := ShallowCopy(PB_DisplayOptions);
 	if Length(args) > 2 then
-		options := args[3];
-		PB_SetDisplayOptions(displayOptions, options);
+		process.options := args[3];
 	fi;
 
 	# time
 	t := PB_GetTime();
-	dt := t - process.lastTime;
-	process.totalTime := process.totalTime + dt;
+	if process.lastTime <> fail then
+		dt := t - process.lastTime;
+		process.totalTime := process.totalTime + dt;
+	fi;
 	process.lastTime := t;
 
 	# increment step
 	process.curStep := process.curStep + 1;
+
+	# print
 	for child in process.children do
 		PB_ResetProcess(child);
 	od;
 
-	# print
-	PB_PrintProcess(process, displayOptions);
+	if IsBound(PB_State.curProcess) and PB_State.curProcess.id <> process.id then
+		proc := PB_State.curProcess;
+		PB_State.curProcess := process;
+		PB_PrintProgress(proc);
+	else
+		PB_State.curProcess := process;
+	fi;
 
-	# new line if root process terminated
+	PB_PrintProgress(process);
+
+	# root process terminated
 	if root.curStep >= root.nrSteps then
+		PB_MoveCursorToLine(PB_State.usedLines);
 		WriteAll(STDOut, "\n");
+		PB_Process := fail;
+		PB_State := fail;
 	fi;
 
 	return process;
+end);
+
+InstallGlobalFunction("PB_ResetProcess", function(process)
+	local child;
+	PB_Perform(process, function(proc)
+		process.totalTime := 0;
+		process.lastTime := fail;
+		process.curStep := 0;
+	end);
 end);
