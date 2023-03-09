@@ -470,6 +470,7 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 	);
 
 	if parent = fail then
+		WriteAll(STDOut, "\033[?25l");
 		PB_Process := process;
 		PB_State := rec(
 			cursor := 1,
@@ -509,7 +510,7 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 end);
 
 InstallGlobalFunction("StartProcess", function(args...)
-	local root, displayOptions, options, process;
+	local root, proc, displayOptions, options, process;
 
 	root := PB_Process;
 	if Length(args) = 1 and not IsInt(args[1]) then
@@ -592,6 +593,7 @@ InstallGlobalFunction("UpdateProcess", function(args...)
 	if root.curStep >= root.nrSteps then
 		PB_MoveCursorToLine(PB_State.usedLines);
 		WriteAll(STDOut, "\n");
+		WriteAll(STDOut, "\033[?25h");
 		PB_Process := fail;
 		PB_State := fail;
 	fi;
