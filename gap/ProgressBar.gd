@@ -122,8 +122,9 @@ DeclareGlobalFunction( "UpdateProcess" );
 
 
 DeclareGlobalFunction( "PB_ResetProcess" );
-DeclareGlobalFunction( "PB_FindProcess" );
-DeclareGlobalFunction( "PB_AddBranchToChildren" );
-DeclareGlobalFunction( "PB_ProcessTime" );
-DeclareGlobalFunction( "PB_MaxProcess" );
+DeclareGlobalFunction( "PB_First" );
+DeclareGlobalFunction( "PB_Reduce" );
+DeclareGlobalFunction( "PB_Perform" );
+DeclareGlobalFunction( "PB_LowerIncludingSelf" );
+DeclareGlobalFunction( "PB_UpperUntilCaller" );
 DeclareGlobalFunction( "PB_PrintProgress" );
