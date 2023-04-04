@@ -296,7 +296,7 @@ end);
 
 # ANSI Escape Sequences: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
 InstallGlobalFunction("PB_PrintProgress", function(process)
-	local options, root, curProcess, curStep, nrSteps, totalTime, title, depth, branches, nrLines, startLine, indent, i,
+	local options, root, curProcess, curStep, nrSteps, totalTime, title, depth, branches, nrLines, startLine, t, indent, i,
 	r, a, progress_percent, progress_ratio, progress_expected_time, progress_info,
 	bar_length, bar_length_full, bar_length_empty, child;
 
@@ -334,11 +334,15 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 	# print headers and set font
 	# TODO: detect if option was changed during execution
 	if options.printTotalTime then
-		PB_MoveCursorToLine(1);
-		PB_RefreshLine();
-		WriteAll(STDOut, options.branch);
-		WriteAll(STDOut, "Total Time ");
-		WriteAll(STDOut, PB_StrTime(PB_ProcessTime(process)));
+		t := PB_StrTime(PB_ProcessTime(process));
+		if t <> PB_State.lastTotalTime then
+			PB_State.lastTotalTime := t;
+			PB_MoveCursorToLine(1);
+			PB_RefreshLine();
+			WriteAll(STDOut, options.branch);
+			WriteAll(STDOut, "Total Time ");
+			WriteAll(STDOut, t);
+		fi;
 		startLine := startLine + 1;
 	fi;
 
@@ -431,9 +435,6 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 		fi;
 		id := args[3];
 	fi;
-	if root <> fail and PB_FindProcess(root, id) <> fail then
-		Error("Process has already been declared");
-	fi;
 	title := fail;
 	if Length(args) > 3 then
 		title := args[4];
@@ -475,35 +476,42 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 		PB_State := rec(
 			cursor := 1,
 			usedLines := 1,
+			lastTotalTime := fail,
 		);
 	else
-		process.depth := parent.depth + 1;
-		# Situation: We need to update the children of all (upper) siblings
-		# | parent
-		#    | parent.child
-		#       | parent.child.child
-		#    | process
-		for child in parent.children do
-			for grandchild in child.children do
-				PB_Perform(grandchild, function(proc)
-					AddSet(proc.branches, process.depth);
-				end);
-			od;
-		od;
-		# Situation: We need to update ourselves
-		# | parent.parent
-		#    | parent
-		#       | process
-		#    | parent.parent.child
-		if parent.parent <> fail then
-			if PositionProperty(parent.parent.children, child -> child.id = parent.id) < Length(parent.parent.children) then
-				AddSet(process.branches, parent.depth);
-				for branch in parent.branches do
-					AddSet(process.branches, branch);
+		pos := PositionProperty(parent.children, proc -> proc.id = id);
+		if pos = fail then
+			process.depth := parent.depth + 1;
+			# Situation: We need to update the children of all (upper) siblings
+			# | parent
+			#    | parent.child
+			#       | parent.child.child
+			#    | process
+			for child in parent.children do
+				for grandchild in child.children do
+					PB_Perform(grandchild, function(proc)
+						AddSet(proc.branches, process.depth);
+					end);
 				od;
+			od;
+			# Situation: We need to update ourselves
+			# | parent.parent
+			#    | parent
+			#       | process
+			#    | parent.parent.child
+			if parent.parent <> fail then
+				if PositionProperty(parent.parent.children, child -> child.id = parent.id) < Length(parent.parent.children) then
+					AddSet(process.branches, parent.depth);
+					for branch in parent.branches do
+						AddSet(process.branches, branch);
+					od;
+				fi;
 			fi;
+			Add(parent.children, process);
+		else
+			process := parent.children[pos];
+			PB_ResetProcess(process);
 		fi;
-		Add(parent.children, process);
 	fi;
 
 	return process;
@@ -602,7 +610,6 @@ InstallGlobalFunction("UpdateProcess", function(args...)
 end);
 
 InstallGlobalFunction("PB_ResetProcess", function(process)
-	local child;
 	PB_Perform(process, function(proc)
 		process.totalTime := 0;
 		process.lastTime := fail;
