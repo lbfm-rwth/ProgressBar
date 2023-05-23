@@ -145,6 +145,6 @@ DeclareGlobalFunction( "PB_ResetProcess" );
 DeclareGlobalFunction( "PB_First" );
 DeclareGlobalFunction( "PB_Reduce" );
 DeclareGlobalFunction( "PB_Perform" );
-DeclareGlobalFunction( "PB_LowerIncludingSelf" );
+DeclareGlobalFunction( "PB_ChildrenAndSelf" );
 DeclareGlobalFunction( "PB_UpperUntilCaller" );
 DeclareGlobalFunction( "PB_PrintProgress" );

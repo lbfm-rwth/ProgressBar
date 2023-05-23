@@ -49,6 +49,40 @@ gap> doLoop(7);
  [===================================================] 100% | 7/7 | eta 0:00:00
 ]]></Example>
 
+The package can also handle very fast updates,
+but keep in mind that it adds some overhead to the computation.
+In this example, the overhead acumulates over the 70 000 iterations to 5 extra seconds
+for a computation that would otherwise only take about 10 seconds.
+
+<Example><![CDATA[
+gap> LoadPackage("ProgressBar");;
+gap> SetDisplayOptionsForProgressBar(rec(printTotalTime := true));;
+gap> doLoop := function(n)
+>      local i;
+>      StartProcess(n);
+>      for i in [1 .. n] do
+>        MicroSleep(100);
+>        UpdateProcess();
+>      od;
+>    end;;
+gap> doLoop(70000);;
+ | Total Time 0:00:15
+ [===========================================] 100% | 70000/70000 | eta 0:00:00
+gap> doLoopWithoutPrint := function(n)
+>      local i;
+>      StartProcess(1);
+>      for i in [1 .. n] do
+>        MicroSleep(100);
+>      od;
+>      UpdateProcess();
+>    end;;
+gap> doLoopWithoutPrint(70000);
+ | Total Time 0:00:10
+ [===================================================] 100% | 1/1 | eta 0:00:00
+gap> ResetDisplayOptionsForProgressBar();;
+]]></Example>
+
+
 In the above example we might encounter the following outputs during the execution of the iteration.
 All these outputs are visible in the same line of the terminal for roughly 1 second.
 <Example><![CDATA[
