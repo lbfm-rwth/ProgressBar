@@ -175,11 +175,11 @@ BindGlobal("PB_Siblings", function(args...)
 	fi;
 end);
 
-InstallGlobalFunction("PB_LowerIncludingSelf", function(process)
+InstallGlobalFunction("PB_ChildrenAndSelf", function(process)
 	local L, child;
 	L := [process];
 	for child in process.children do
-		Append(L, PB_LowerIncludingSelf(child));
+		Append(L, PB_ChildrenAndSelf(child));
 	od;
 	return L;
 end);
@@ -188,10 +188,10 @@ BindGlobal("PB_Lower", function(process)
 	local L, child, sibling;
 	L := [];
 	for child in process.children do
-		Append(L, PB_LowerIncludingSelf(child, false));
+		Append(L, PB_ChildrenAndSelf(child, false));
 	od;
 	for sibling in PB_Siblings(process, "lower") do
-		Append(L, PB_LowerIncludingSelf(sibling, false));
+		Append(L, PB_ChildrenAndSelf(sibling, false));
 	od;
 	return L;
 end);
@@ -359,8 +359,8 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 	# TODO: detect if option was changed during execution
 	if options.printTotalTime then
 		t := PB_StrTime(PB_ProcessTime(process));
-		if t <> PB_State.lastTotalTime then
-			PB_State.lastTotalTime := t;
+		if t <> PB_State.totalTime then
+			PB_State.totalTime := t;
 			PB_MoveCursorToLine(1);
 			PB_RefreshLine();
 			WriteAll(STDOut, options.branch);
@@ -504,7 +504,7 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 		PB_State := rec(
 			cursor := 1,
 			usedLines := 1,
-			lastTotalTime := fail,
+			totalTime := fail,
 		);
 	else
 		pos := PositionProperty(parent.children, proc -> proc.id = id);
@@ -560,8 +560,6 @@ InstallGlobalFunction("StartProcess", function(args...)
 		process := CallFuncList(DeclareProcess, args);
 	fi;
 
-	process.lastTime := PB_GetTime();
-
 	# print process
 	if IsBound(PB_State.curProcess) and PB_State.curProcess.id <> process.id then
 		proc := PB_State.curProcess;
@@ -572,6 +570,7 @@ InstallGlobalFunction("StartProcess", function(args...)
 	fi;
 
 	PB_ResetProcess(process);
+	process.lastTime := PB_GetTime();
 	PB_Perform(process, function(proc)
 		PB_PrintProgress(proc);
 	end);
