@@ -294,35 +294,65 @@ end);
 #############################################################################
 
 
+BindGlobal("PB_Print", function(msg)
+	WriteAll(STDOut, msg);
+	PB_State.cursorHorizontalPos := PB_State.cursorHorizontalPos + Length(msg);
+end);
+
+BindGlobal("PB_MoveCursorToStartOfLine", function()
+	WriteAll(STDOut, "\r"); # move cursor to the start of the line
+	PB_State.cursorHorizontalPos := 1;
+end);
+
 # moves cursor to line n
 BindGlobal("PB_MoveCursorToLine", function(n)
 	local move;
 	if PB_State.usedLines < n then
-		move := PB_State.cursor - PB_State.usedLines;
+		move := PB_State.cursorVerticalPos - PB_State.usedLines;
 		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # moves cursor down X lines
 		WriteAll(STDOut, Concatenation(ListWithIdenticalEntries(n - PB_State.usedLines, "\n"))); # create X new lines
 		PB_State.usedLines := n;
 	else
-		move := PB_State.cursor - n;
+		move := PB_State.cursorVerticalPos - n;
 		if move > 0 then
 			WriteAll(STDOut, Concatenation("\033[", String(move), "A")); # moves cursor up X lines
 		elif move < 0 then
-			WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # moves cursor down X lines
+			WriteAll(STDOut, Concatenation("\033[", String(-move), "B")); # moves cursor down X lines
 		fi;
 	fi;
-	PB_State.cursor := n;
+	PB_State.cursorVerticalPos := n;
+end);
+
+BindGlobal("PB_MoveCursorRight", function(move)
+	WriteAll(STDOut, Concatenation("\033[", String(move), "C")); # moves cursor right X characters
+	PB_State.cursorHorizontalPos := PB_State.cursorHorizontalPos + move;
+end);
+
+BindGlobal("PB_MoveCursorLeft", function(move)
+	WriteAll(STDOut, Concatenation("\033[", String(move), "D")); # moves cursor left X characters
+	PB_State.cursorHorizontalPos := PB_State.cursorHorizontalPos - move;
+end);
+
+BindGlobal("PB_MoveCursorToChar", function(n)
+	local move;
+	move := n - PB_State.cursorHorizontalPos + 1;
+	if move > 0 then
+		PB_MoveCursorRight(move);
+	elif move < 0 then
+		PB_MoveCursorLeft(-move);
+	fi;
 end);
 
 BindGlobal("PB_RefreshLine", function()
 	WriteAll(STDOut, "\033[2K"); # erase the entire line
-	WriteAll(STDOut, "\r"); # move cursor to the start of the line
+	PB_MoveCursorToStartOfLine();
 end);
 
 # ANSI Escape Sequences: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
 InstallGlobalFunction("PB_PrintProgress", function(process)
 	local options, root, curProcess, curStep, nrSteps, totalTime, title, depth, branches, nrLines, startLine, t, indent, i,
 	r, a, progress_percent, progress_ratio, progress_expected_time, progress_info,
-	bar_length, bar_length_full, bar_length_empty, child;
+	bar_length, bar_length_full, bar_length_empty, child, l;
 
 	# initialization
 	options := ShallowCopy(PB_DisplayOptions);
@@ -363,14 +393,14 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 			PB_State.totalTime := t;
 			PB_MoveCursorToLine(1);
 			PB_RefreshLine();
-			WriteAll(STDOut, options.branch);
-			WriteAll(STDOut, "Total Time ");
-			WriteAll(STDOut, t);
+			PB_Print(options.branch);
+			PB_Print("Total Time ");
+			PB_Print(t);
 		fi;
 		startLine := startLine + 1;
 	fi;
 
-	# move cursor to start of the line of process
+	# move cursor to startline of process
 	PB_MoveCursorToLine(startLine);
 
 	# TODO: fix this, we need to detect change in curProcess
@@ -383,54 +413,87 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 	# TODO: detect if option was changed during execution
 	if title <> fail then
 		PB_RefreshLine();
-		WriteAll(STDOut, indent);
-		WriteAll(STDOut, options.branch);
-		WriteAll(STDOut, title);
+		PB_Print(indent);
+		PB_Print(options.branch);
+		PB_Print(title);
 		WriteAll(STDOut, "\n");
 		nrLines := nrLines + 1;
 	fi;
 
 	# progress info
-	progress_info := [];
-	r := curStep / nrSteps;
-	progress_percent := Concatenation(String(Int(r * 100), 3), "%");
-	Add(progress_info, progress_percent);
-	progress_ratio := Concatenation(String(curStep, PB_State.nr_digits), "/", String(nrSteps));
-	Add(progress_info, progress_ratio);
-	if options.printETA then
-		if curStep > 0 then
-			a := totalTime / curStep;
-			progress_expected_time := Concatenation("eta ", PB_StrTime(Int(a * (nrSteps - curStep))));
-		else
+	if curStep = 0 then
+		progress_info := [];
+		r := curStep / nrSteps;
+		progress_percent := Concatenation(String(Int(r * 100), 3), "%");
+		Add(progress_info, progress_percent);
+		progress_ratio := Concatenation(String(curStep, PB_State.nr_digits), "/", String(nrSteps));
+		Add(progress_info, progress_ratio);
+		if options.printETA then
+			# if curStep > 0 then
+			# 	a := totalTime / curStep;
+			# 	progress_expected_time := Concatenation("eta ", PB_StrTime(Int(a * (nrSteps - curStep))));
+			# else
+			# 	progress_expected_time := "eta ?:??:??";
+			# fi;
 			progress_expected_time := "eta ?:??:??";
+			Add(progress_info, progress_expected_time);
 		fi;
-		Add(progress_info, progress_expected_time);
-	fi;
-	progress_info := JoinStringsWithSeparator(progress_info, options.separator);
+		progress_info := JoinStringsWithSeparator(progress_info, options.separator);
 
-	# progress bar length
-	bar_length := PB_State.widthScreen - Length(indent) - Length(options.bar_prefix) - Length(options.bar_suffix) - Length(progress_info);
-	bar_length_full := Int(bar_length * r);
-	bar_length_empty := bar_length - bar_length_full;
+		# progress bar length
+		bar_length := PB_State.widthScreen - Length(indent) - Length(options.bar_prefix) - Length(options.bar_suffix) - Length(progress_info);
+		bar_length_full := Int(bar_length * r);
+		bar_length_empty := bar_length - bar_length_full;
 
-	# print progress bar
-	PB_RefreshLine();
-	WriteAll(STDOut, indent);
-	WriteAll(STDOut, options.bar_prefix);
-	if bar_length_full > 0 then
-		WriteAll(STDOut, Concatenation(ListWithIdenticalEntries(bar_length_full, options.bar_symbol_full)));
+		# print progress bar
+		PB_RefreshLine();
+		PB_Print(indent);
+		PB_Print(options.bar_prefix);
+		if bar_length_full > 0 then
+			PB_Print(Concatenation(ListWithIdenticalEntries(bar_length_full, options.bar_symbol_full)));
+		fi;
+		if bar_length_empty > 0 then
+			PB_Print(Concatenation(ListWithIdenticalEntries(bar_length_empty, options.bar_symbol_empty)));
+		fi;
+		PB_Print(options.bar_suffix);
+		PB_Print(progress_info);
+		WriteAll(STDOut, "\033[0m");
+
+		# save some stuff
+		process.bar_length := bar_length;
+		process.bar_length_full := bar_length_full;
+	else
+		# progress bar length
+		r := curStep / nrSteps;
+		bar_length := process.bar_length;
+		bar_length_full := Int(bar_length * r);
+		bar_length_empty := bar_length - bar_length_full;
+
+		# print progress bar
+		PB_MoveCursorToChar(Length(indent) + Length(options.bar_prefix) + process.bar_length_full);
+		l := bar_length_full - process.bar_length_full;
+		if l > 0 then
+			PB_Print(Concatenation(ListWithIdenticalEntries(l, options.bar_symbol_full)));
+		fi;
+		PB_MoveCursorRight(bar_length_empty + Length(options.bar_suffix));
+		PB_Print(String(Int(r * 100), 3));
+		PB_MoveCursorRight(1 + Length(options.separator));
+		PB_Print(String(curStep, PB_State.nr_digits));
+		PB_MoveCursorRight(1 + PB_State.nr_digits);
+		if options.printETA then
+			PB_MoveCursorRight(Length(options.separator) + 4);
+			a := totalTime / curStep;
+			PB_Print(PB_StrTime(Int(a * (nrSteps - curStep))));
+		fi;
+
+		# save some stuff
+		process.bar_length_full := bar_length_full;
 	fi;
-	if bar_length_empty > 0 then
-		WriteAll(STDOut, Concatenation(ListWithIdenticalEntries(bar_length_empty, options.bar_symbol_empty)));
-	fi;
-	WriteAll(STDOut, options.bar_suffix);
-	WriteAll(STDOut, progress_info);
-	WriteAll(STDOut, "\033[0m");
 	nrLines := nrLines + 1;
 
 	# update cursor
 	process.nrLines := nrLines;
-	PB_State.cursor := PB_State.cursor + nrLines - 1;
+	PB_State.cursorVerticalPos := PB_State.cursorVerticalPos + nrLines - 1;
 	PB_State.usedLines := Maximum(PB_State.usedLines, startLine + nrLines - 1);
 end);
 
@@ -502,7 +565,8 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 		WriteAll(STDOut, "\033[?25l");
 		PB_Process := process;
 		PB_State := rec(
-			cursor := 1,
+			cursorVerticalPos := 1,
+			cursorHorizontalPos := 1,
 			usedLines := 1,
 			totalTime := fail,
 		);
