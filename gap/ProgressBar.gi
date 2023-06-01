@@ -31,13 +31,106 @@
 
 
 PB_Process := fail;
+PB_Terminal := fail;
 PB_State := fail;
 
 
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
-## Helper Functions
+## Helper Functions : Manipulating Cursor and Printing
+##                                                                         ##
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+#############################################################################
+
+
+# ANSI Escape Sequences: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+
+BindGlobal("PB_Print", function(msg)
+	WriteAll(STDOut, msg);
+	PB_Terminal.cursorHorizontalPos := PB_Terminal.cursorHorizontalPos + Length(msg);
+end);
+
+BindGlobal("PB_PrintNewLine", function(args...)
+	local n;
+	n := 1;
+	if Length(args) = 1 then
+		n := args[1];
+	fi;
+	WriteAll(STDOut, Concatenation(ListWithIdenticalEntries(n, "\n"))); # create n new lines
+	PB_Terminal.cursorVerticalPos := PB_Terminal.cursorVerticalPos + n;
+end);
+
+BindGlobal("PB_MoveCursorToStartOfLine", function()
+	WriteAll(STDOut, "\r"); # move cursor to the start of the line
+	PB_Terminal.cursorHorizontalPos := 1;
+end);
+
+BindGlobal("PB_MoveCursorDown", function(move)
+	local n;
+	move := AbsInt(move);
+	n := PB_Terminal.cursorVerticalPos + move;
+	if PB_Terminal.usedLines < n then
+		move := PB_Terminal.usedLines - PB_Terminal.cursorVerticalPos;
+		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # moves cursor down X lines
+		PB_PrintNewLine(n - PB_Terminal.usedLines);
+		PB_Terminal.usedLines := n;
+	else
+		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # moves cursor down X lines
+		PB_Terminal.cursorVerticalPos := PB_Terminal.cursorVerticalPos + move;
+	fi;
+	PB_MoveCursorToStartOfLine();
+end);
+
+BindGlobal("PB_MoveCursorUp", function(move)
+	move := AbsInt(move);
+	WriteAll(STDOut, Concatenation("\033[", String(move), "A")); # moves cursor up X lines
+	PB_Terminal.cursorVerticalPos := PB_Terminal.cursorVerticalPos - move;
+	PB_MoveCursorToStartOfLine();
+end);
+
+BindGlobal("PB_MoveCursorToLine", function(n)
+	local move;
+	move := n - PB_Terminal.cursorVerticalPos;
+	if move > 0 then
+		PB_MoveCursorDown(move);
+	elif move < 0 then
+		PB_MoveCursorUp(-move);
+	fi;
+end);
+
+BindGlobal("PB_MoveCursorRight", function(move)
+	move := AbsInt(move);
+	WriteAll(STDOut, Concatenation("\033[", String(move), "C")); # moves cursor right X characters
+	PB_Terminal.cursorHorizontalPos := PB_Terminal.cursorHorizontalPos + move;
+end);
+
+BindGlobal("PB_MoveCursorLeft", function(move)
+	move := AbsInt(move);
+	WriteAll(STDOut, Concatenation("\033[", String(move), "D")); # moves cursor left X characters
+	PB_Terminal.cursorHorizontalPos := PB_Terminal.cursorHorizontalPos - move;
+end);
+
+BindGlobal("PB_MoveCursorToChar", function(n)
+	local move;
+	move := n - PB_Terminal.cursorHorizontalPos;
+	if move > 0 then
+		PB_MoveCursorRight(move);
+	elif move < 0 then
+		PB_MoveCursorLeft(-move);
+	fi;
+end);
+
+BindGlobal("PB_RefreshLine", function()
+	WriteAll(STDOut, "\033[2K"); # erase the entire line
+	PB_MoveCursorToStartOfLine();
+end);
+
+
+#############################################################################
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+##                                                                         ##
+## Helper Functions : Manipulating Strings
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
@@ -102,6 +195,16 @@ BindGlobal("PB_StrTime", function(args...)
 		return JoinStringsWithSeparator([h, min, sec], ":");
 	fi;
 end);
+
+
+#############################################################################
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+##                                                                         ##
+## Helper Functions : Manipulating Process Tree
+##                                                                         ##
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+#############################################################################
+
 
 InstallGlobalFunction("PB_First", function(process, func)
 	local child, res;
@@ -288,67 +391,43 @@ end);
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
+## Progress Bar : Printer
+##                                                                         ##
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+#############################################################################
+
+
+# The Process Printer has an internal list of Printers for smaller parts, and deals with the "communication" of those Printers.
+# It stores global information in PB_State that is shared between all Printers.
+# A Printer is a record with a reserveSpace and a print function.
+# The reserveSpace function returns an integer
+# that states how many characters need to be reserved for this part of the printing process.
+# It may be zero, if no space is needed.
+# It returns fail, if further information is required to compute the amount of space needed.
+
+# A Printer returns true if the print was successfull,
+# otherwise returns false if further information is needed.
+# A Printer may store intermediate results in the process record.
+# A Process Printer may also traverse the process tree and call Printer for other processes.
+
+BindGlobal("PB_PrintProcess", function(process)
+	return;
+end);
+
+BindGlobal("PB_SeparatorPrinter", function(process)
+	return;
+end);
+
+
+#############################################################################
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+##                                                                         ##
 ## Progress Bar
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
 
 
-BindGlobal("PB_Print", function(msg)
-	WriteAll(STDOut, msg);
-	PB_State.cursorHorizontalPos := PB_State.cursorHorizontalPos + Length(msg);
-end);
-
-BindGlobal("PB_MoveCursorToStartOfLine", function()
-	WriteAll(STDOut, "\r"); # move cursor to the start of the line
-	PB_State.cursorHorizontalPos := 1;
-end);
-
-# moves cursor to line n
-BindGlobal("PB_MoveCursorToLine", function(n)
-	local move;
-	if PB_State.usedLines < n then
-		move := PB_State.cursorVerticalPos - PB_State.usedLines;
-		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # moves cursor down X lines
-		WriteAll(STDOut, Concatenation(ListWithIdenticalEntries(n - PB_State.usedLines, "\n"))); # create X new lines
-		PB_State.usedLines := n;
-	else
-		move := PB_State.cursorVerticalPos - n;
-		if move > 0 then
-			WriteAll(STDOut, Concatenation("\033[", String(move), "A")); # moves cursor up X lines
-		elif move < 0 then
-			WriteAll(STDOut, Concatenation("\033[", String(-move), "B")); # moves cursor down X lines
-		fi;
-	fi;
-	PB_State.cursorVerticalPos := n;
-end);
-
-BindGlobal("PB_MoveCursorRight", function(move)
-	WriteAll(STDOut, Concatenation("\033[", String(move), "C")); # moves cursor right X characters
-	PB_State.cursorHorizontalPos := PB_State.cursorHorizontalPos + move;
-end);
-
-BindGlobal("PB_MoveCursorLeft", function(move)
-	WriteAll(STDOut, Concatenation("\033[", String(move), "D")); # moves cursor left X characters
-	PB_State.cursorHorizontalPos := PB_State.cursorHorizontalPos - move;
-end);
-
-BindGlobal("PB_MoveCursorToChar", function(n)
-	local move;
-	move := n - PB_State.cursorHorizontalPos + 1;
-	if move > 0 then
-		PB_MoveCursorRight(move);
-	elif move < 0 then
-		PB_MoveCursorLeft(-move);
-	fi;
-end);
-
-BindGlobal("PB_RefreshLine", function()
-	WriteAll(STDOut, "\033[2K"); # erase the entire line
-	PB_MoveCursorToStartOfLine();
-end);
-
-# ANSI Escape Sequences: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
 InstallGlobalFunction("PB_PrintProgress", function(process)
 	local options, root, curProcess, curStep, nrSteps, totalTime, title, depth, branches, nrLines, startLine, t, indent, i,
 	r, a, progress_percent, progress_ratio, progress_expected_time, progress_info,
@@ -358,11 +437,11 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 	options := ShallowCopy(PB_DisplayOptions);
 	PB_SetDisplayOptions(options, process.options);
 	root := PB_Process;
-	PB_State.widthScreen := SizeScreen()[1] - 1;
-	PB_State.nr_digits := PB_NrDigits(PB_ProcessMaxSteps(root));
+	PB_Terminal.widthScreen := SizeScreen()[1] - 1;
+	PB_Terminal.nr_digits := PB_NrDigits(PB_ProcessMaxSteps(root));
 	curProcess := fail;
-	if IsBound(PB_State.curProcess) then
-		curProcess := PB_State.curProcess;
+	if IsBound(PB_Terminal.curProcess) then
+		curProcess := PB_Terminal.curProcess;
 	fi;
 	curStep := process.curStep;
 	nrSteps := process.nrSteps;
@@ -389,8 +468,8 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 	# TODO: detect if option was changed during execution
 	if options.printTotalTime then
 		t := PB_StrTime(PB_ProcessTime(process));
-		if t <> PB_State.totalTime then
-			PB_State.totalTime := t;
+		if t <> PB_Terminal.totalTime then
+			PB_Terminal.totalTime := t;
 			PB_MoveCursorToLine(1);
 			PB_RefreshLine();
 			PB_Print(options.branch);
@@ -422,11 +501,12 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 
 	# progress info
 	if curStep = 0 then
+		PB_RefreshLine();
 		progress_info := [];
 		r := curStep / nrSteps;
 		progress_percent := Concatenation(String(Int(r * 100), 3), "%");
 		Add(progress_info, progress_percent);
-		progress_ratio := Concatenation(String(curStep, PB_State.nr_digits), "/", String(nrSteps));
+		progress_ratio := Concatenation(String(curStep, PB_Terminal.nr_digits), "/", String(nrSteps));
 		Add(progress_info, progress_ratio);
 		if options.printETA then
 			# if curStep > 0 then
@@ -441,7 +521,7 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 		progress_info := JoinStringsWithSeparator(progress_info, options.separator);
 
 		# progress bar length
-		bar_length := PB_State.widthScreen - Length(indent) - Length(options.bar_prefix) - Length(options.bar_suffix) - Length(progress_info);
+		bar_length := PB_Terminal.widthScreen - Length(indent) - Length(options.bar_prefix) - Length(options.bar_suffix) - Length(progress_info);
 		bar_length_full := Int(bar_length * r);
 		bar_length_empty := bar_length - bar_length_full;
 
@@ -463,6 +543,8 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 		process.bar_length := bar_length;
 		process.bar_length_full := bar_length_full;
 	else
+		# TODO: fix this dirty hack
+		PB_MoveCursorToStartOfLine();
 		# progress bar length
 		r := curStep / nrSteps;
 		bar_length := process.bar_length;
@@ -470,7 +552,7 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 		bar_length_empty := bar_length - bar_length_full;
 
 		# print progress bar
-		PB_MoveCursorToChar(Length(indent) + Length(options.bar_prefix) + process.bar_length_full);
+		PB_MoveCursorToChar(Length(indent) + Length(options.bar_prefix) + process.bar_length_full + 1);
 		l := bar_length_full - process.bar_length_full;
 		if l > 0 then
 			PB_Print(Concatenation(ListWithIdenticalEntries(l, options.bar_symbol_full)));
@@ -478,8 +560,8 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 		PB_MoveCursorRight(bar_length_empty + Length(options.bar_suffix));
 		PB_Print(String(Int(r * 100), 3));
 		PB_MoveCursorRight(1 + Length(options.separator));
-		PB_Print(String(curStep, PB_State.nr_digits));
-		PB_MoveCursorRight(1 + PB_State.nr_digits);
+		PB_Print(String(curStep, PB_Terminal.nr_digits));
+		PB_MoveCursorRight(1 + PB_Terminal.nr_digits);
 		if options.printETA then
 			PB_MoveCursorRight(Length(options.separator) + 4);
 			a := totalTime / curStep;
@@ -493,8 +575,8 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 
 	# update cursor
 	process.nrLines := nrLines;
-	PB_State.cursorVerticalPos := PB_State.cursorVerticalPos + nrLines - 1;
-	PB_State.usedLines := Maximum(PB_State.usedLines, startLine + nrLines - 1);
+	PB_Terminal.cursorVerticalPos := PB_Terminal.cursorVerticalPos + nrLines - 1;
+	PB_Terminal.usedLines := Maximum(PB_Terminal.usedLines, startLine + nrLines - 1);
 end);
 
 
@@ -542,7 +624,7 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 		# total time of process at the start of current step
 		totalTime := 0,
 		# last time stamp of process at the start of current step
-		lastTime := fail,
+		timeStamp := fail,
 		# current step of process
 		curStep := 0,
 		# total number of steps for process to be marked as finished
@@ -564,7 +646,7 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 	if parent = fail then
 		WriteAll(STDOut, "\033[?25l");
 		PB_Process := process;
-		PB_State := rec(
+		PB_Terminal := rec(
 			cursorVerticalPos := 1,
 			cursorHorizontalPos := 1,
 			usedLines := 1,
@@ -625,16 +707,16 @@ InstallGlobalFunction("StartProcess", function(args...)
 	fi;
 
 	# print process
-	if IsBound(PB_State.curProcess) and PB_State.curProcess.id <> process.id then
-		proc := PB_State.curProcess;
-		PB_State.curProcess := process;
+	if IsBound(PB_Terminal.curProcess) and PB_Terminal.curProcess.id <> process.id then
+		proc := PB_Terminal.curProcess;
+		PB_Terminal.curProcess := process;
 		PB_PrintProgress(proc);
 	else
-		PB_State.curProcess := process;
+		PB_Terminal.curProcess := process;
 	fi;
 
 	PB_ResetProcess(process);
-	process.lastTime := PB_GetTime();
+	process.timeStamp := PB_GetTime();
 	PB_Perform(process, function(proc)
 		PB_PrintProgress(proc);
 	end);
@@ -664,11 +746,11 @@ InstallGlobalFunction("UpdateProcess", function(args...)
 
 	# time
 	t := PB_GetTime();
-	if process.lastTime <> fail then
-		dt := t - process.lastTime;
+	if process.timeStamp <> fail then
+		dt := t - process.timeStamp;
 		process.totalTime := process.totalTime + dt;
 	fi;
-	process.lastTime := t;
+	process.timeStamp := t;
 
 	# increment step
 	process.curStep := process.curStep + 1;
@@ -678,23 +760,23 @@ InstallGlobalFunction("UpdateProcess", function(args...)
 		PB_ResetProcess(child);
 	od;
 
-	if IsBound(PB_State.curProcess) and PB_State.curProcess.id <> process.id then
-		proc := PB_State.curProcess;
-		PB_State.curProcess := process;
+	if IsBound(PB_Terminal.curProcess) and PB_Terminal.curProcess.id <> process.id then
+		proc := PB_Terminal.curProcess;
+		PB_Terminal.curProcess := process;
 		PB_PrintProgress(proc);
 	else
-		PB_State.curProcess := process;
+		PB_Terminal.curProcess := process;
 	fi;
 
 	PB_PrintProgress(process);
 
 	# root process terminated
 	if root.curStep >= root.nrSteps then
-		PB_MoveCursorToLine(PB_State.usedLines);
+		PB_MoveCursorToLine(PB_Terminal.usedLines);
 		WriteAll(STDOut, "\n");
 		WriteAll(STDOut, "\033[?25h");
 		PB_Process := fail;
-		PB_State := fail;
+		PB_Terminal := fail;
 	fi;
 
 	return process;
@@ -703,7 +785,7 @@ end);
 InstallGlobalFunction("PB_ResetProcess", function(process)
 	PB_Perform(process, function(proc)
 		process.totalTime := 0;
-		process.lastTime := fail;
+		process.timeStamp := fail;
 		process.curStep := 0;
 	end);
 end);
