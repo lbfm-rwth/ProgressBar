@@ -61,6 +61,78 @@ BindGlobal("PB_PrintNewLine", function(args...)
 	PB_Terminal.cursorVerticalPos := PB_Terminal.cursorVerticalPos + n;
 end);
 
+BindGlobal("PB_ResetModeAndColor", function()
+	WriteAll(STDOut, "\033[0m");
+end);
+
+BindGlobal("PB_SetMode", function(mode)
+	if mode = "default" then
+		WriteAll(STDOut, "\033[22m\033[23m\033[24m\033[25m");
+	elif mode = "bold" then
+		WriteAll(STDOut, "\033[1m");
+	elif mode = "dim" then
+		WriteAll(STDOut, "\033[2m");
+	elif mode = "italic" then
+		WriteAll(STDOut, "\033[3m");
+	elif mode = "underline" then
+		WriteAll(STDOut, "\033[4m");
+	elif mode = "blinking" then
+		WriteAll(STDOut, "\033[5m");
+	fi;
+end);
+
+BindGlobal("PB_SetForegroundColor", function(color)
+	if color = "default" then
+		WriteAll(STDOut, "\033[39m");
+	elif color = "black" then
+		WriteAll(STDOut, "\033[30m");
+    elif color = "red" then
+        WriteAll(STDOut, "\033[31m");
+	elif color = "green" then
+        WriteAll(STDOut, "\033[32m");
+	elif color = "yellow" then
+        WriteAll(STDOut, "\033[33m");
+	elif color = "blue" then
+        WriteAll(STDOut, "\033[34m");
+	elif color = "magenta" then
+        WriteAll(STDOut, "\033[35m");
+	elif color = "cyan" then
+        WriteAll(STDOut, "\033[36m");
+	elif color = "white" then
+        WriteAll(STDOut, "\033[37m");
+	fi;
+end);
+
+BindGlobal("PB_SetBackgroundColor", function(color)
+	if color = "default" then
+		WriteAll(STDOut, "\033[49m");
+	elif color = "black" then
+		WriteAll(STDOut, "\033[40m");
+    elif color = "red" then
+        WriteAll(STDOut, "\033[41m");
+	elif color = "green" then
+        WriteAll(STDOut, "\033[42m");
+	elif color = "yellow" then
+        WriteAll(STDOut, "\033[43m");
+	elif color = "blue" then
+        WriteAll(STDOut, "\033[44m");
+	elif color = "magenta" then
+        WriteAll(STDOut, "\033[45m");
+	elif color = "cyan" then
+        WriteAll(STDOut, "\033[46m");
+	elif color = "white" then
+        WriteAll(STDOut, "\033[47m");
+	fi;
+end);
+
+BindGlobal("PB_HideCursor", function()
+	WriteAll(STDOut, "\033[?25l"); # hide cursor
+end);
+
+BindGlobal("PB_ShowCursor", function()
+	WriteAll(STDOut, "\033[?25h"); # show cursor
+end);
+
 BindGlobal("PB_MoveCursorToStartOfLine", function()
 	WriteAll(STDOut, "\r"); # move cursor to the start of the line
 	PB_Terminal.cursorHorizontalPos := 1;
@@ -72,11 +144,11 @@ BindGlobal("PB_MoveCursorDown", function(move)
 	n := PB_Terminal.cursorVerticalPos + move;
 	if PB_Terminal.usedLines < n then
 		move := PB_Terminal.usedLines - PB_Terminal.cursorVerticalPos;
-		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # moves cursor down X lines
+		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # move cursor down X lines
 		PB_PrintNewLine(n - PB_Terminal.usedLines);
 		PB_Terminal.usedLines := n;
 	else
-		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # moves cursor down X lines
+		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # move cursor down X lines
 		PB_Terminal.cursorVerticalPos := PB_Terminal.cursorVerticalPos + move;
 	fi;
 	PB_MoveCursorToStartOfLine();
@@ -84,7 +156,7 @@ end);
 
 BindGlobal("PB_MoveCursorUp", function(move)
 	move := AbsInt(move);
-	WriteAll(STDOut, Concatenation("\033[", String(move), "A")); # moves cursor up X lines
+	WriteAll(STDOut, Concatenation("\033[", String(move), "A")); # move cursor up X lines
 	PB_Terminal.cursorVerticalPos := PB_Terminal.cursorVerticalPos - move;
 	PB_MoveCursorToStartOfLine();
 end);
@@ -101,13 +173,13 @@ end);
 
 BindGlobal("PB_MoveCursorRight", function(move)
 	move := AbsInt(move);
-	WriteAll(STDOut, Concatenation("\033[", String(move), "C")); # moves cursor right X characters
+	WriteAll(STDOut, Concatenation("\033[", String(move), "C")); # move cursor right X characters
 	PB_Terminal.cursorHorizontalPos := PB_Terminal.cursorHorizontalPos + move;
 end);
 
 BindGlobal("PB_MoveCursorLeft", function(move)
 	move := AbsInt(move);
-	WriteAll(STDOut, Concatenation("\033[", String(move), "D")); # moves cursor left X characters
+	WriteAll(STDOut, Concatenation("\033[", String(move), "D")); # move cursor left X characters
 	PB_Terminal.cursorHorizontalPos := PB_Terminal.cursorHorizontalPos - move;
 end);
 
@@ -331,13 +403,13 @@ end);
 
 
 # Default options, immutable entries
-BindGlobal( "PB_DisplayOptionsDefault", Immutable(rec(
+BindGlobal("PB_DisplayOptionsDefault", Immutable(rec(
 	# print bool options
     printTotalTime := false,
 	printETA := true,
-	removeChildren := true,
 	highlightCurStep := false,
 	highlightColor := "red",
+	highlightMode := "default",
 	# print symbols
 	separator := " | ",
 	branch := " | ",
@@ -348,14 +420,14 @@ BindGlobal( "PB_DisplayOptionsDefault", Immutable(rec(
 )));
 
 # Current options, mutable entries
-BindGlobal( "PB_DisplayOptions", ShallowCopy(PB_DisplayOptionsDefault));
+BindGlobal("PB_DisplayOptions", ShallowCopy(PB_DisplayOptionsDefault));
 
 InstallGlobalFunction( DisplayOptionsForProgressBar,
 function()
     Display(PB_DisplayOptions);
 end);
 
-BindGlobal( "PB_SetDisplayOptions",
+BindGlobal("PB_SetDisplayOptions",
 function(optionsBase, optionsUpdate)
     local r;
     for r in RecNames(optionsUpdate) do
@@ -366,23 +438,12 @@ function(optionsBase, optionsUpdate)
     od;
 end);
 
-BindGlobal("PB_SetFont",
-function(options)
-    # Color
-    if options.highlightColor = "red" then
-        WriteAll(STDOut, "\033[31m");
-    elif options.highlightColor = "blue" then
-        WriteAll(STDOut, "\033[34m");
-    fi;
-end);
-
-
-InstallGlobalFunction( SetDisplayOptionsForProgressBar,
+InstallGlobalFunction(SetDisplayOptionsForProgressBar,
 function(options)
     PB_SetDisplayOptions(PB_DisplayOptions, options);
 end);
 
-InstallGlobalFunction( ResetDisplayOptionsForProgressBar,
+InstallGlobalFunction(ResetDisplayOptionsForProgressBar,
 function()
     SetDisplayOptionsForProgressBar(PB_DisplayOptionsDefault);
 end);
@@ -399,23 +460,32 @@ end);
 
 # The Process Printer has an internal list of Printers for smaller parts, and deals with the "communication" of those Printers.
 # It stores global information in PB_State that is shared between all Printers.
-# A Printer is a record with a reserveSpace and a print function.
+# A Printer is a record with a reserveSpace, a print and a refresh function.
 # The reserveSpace function returns an integer
 # that states how many characters need to be reserved for this part of the printing process.
-# It may be zero, if no space is needed.
+# It may be zero, if no space is needed. (For example if space needs to be allocated during runtime.)
 # It returns fail, if further information is required to compute the amount of space needed.
-
-# A Printer returns true if the print was successfull,
-# otherwise returns false if further information is needed.
-# A Printer may store intermediate results in the process record.
-# A Process Printer may also traverse the process tree and call Printer for other processes.
+# The print and refresh function get as input a process and the amount of reserved space.
 
 BindGlobal("PB_PrintProcess", function(process)
 	return;
 end);
 
-BindGlobal("PB_SeparatorPrinter", function(process)
-	return;
+BindGlobal("PB_SeparatorPrinter", rec(
+	ReserveSpace := function(process)
+		return Length(PB_DisplayOptions.separator);
+	end,
+	Print := function(process, space)
+		PB_Print(PB_DisplayOptions.separator);
+	end,
+	Refresh := function(process, space)
+		return;
+	end,
+));
+
+BindGlobal("PB_SetFont", function(options)
+	PB_SetMode(options.highlightMode);
+    PB_SetForegroundColor(options.highlightColor);
 end);
 
 
@@ -486,7 +556,7 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 	if options.highlightCurStep and process = curProcess and not (process = root and curStep >= nrSteps) then
 		PB_SetFont(options);
 	else
-		WriteAll(STDOut, "\033[0m");
+		PB_ResetModeAndColor();
 	fi;
 
 	# TODO: detect if option was changed during execution
@@ -495,7 +565,7 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 		PB_Print(indent);
 		PB_Print(options.branch);
 		PB_Print(title);
-		WriteAll(STDOut, "\n");
+		PB_PrintNewLine();
 		nrLines := nrLines + 1;
 	fi;
 
@@ -537,7 +607,7 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 		fi;
 		PB_Print(options.bar_suffix);
 		PB_Print(progress_info);
-		WriteAll(STDOut, "\033[0m");
+		PB_ResetModeAndColor();
 
 		# save some stuff
 		process.bar_length := bar_length;
@@ -637,14 +707,14 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 		depth := 0,
 		# additional branches on the left of process
 		branches := [],
-		# number of lines used by this process
+		# number of lines reserved by this process
 		nrLines := 0,
 		# options of process overriding the global options
 		options := options,
 	);
 
 	if parent = fail then
-		WriteAll(STDOut, "\033[?25l");
+		PB_HideCursor();
 		PB_Process := process;
 		PB_Terminal := rec(
 			cursorVerticalPos := 1,
@@ -773,8 +843,8 @@ InstallGlobalFunction("UpdateProcess", function(args...)
 	# root process terminated
 	if root.curStep >= root.nrSteps then
 		PB_MoveCursorToLine(PB_Terminal.usedLines);
-		WriteAll(STDOut, "\n");
-		WriteAll(STDOut, "\033[?25h");
+		PB_PrintNewLine();
+		PB_ShowCursor();
 		PB_Process := fail;
 		PB_Terminal := fail;
 	fi;
