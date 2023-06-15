@@ -427,7 +427,7 @@ function()
     Display(PB_DisplayOptions);
 end);
 
-BindGlobal("PB_SetDisplayOptions",
+BindGlobal("PB_SetOptions",
 function(optionsBase, optionsUpdate)
     local r;
     for r in RecNames(optionsUpdate) do
@@ -440,7 +440,7 @@ end);
 
 InstallGlobalFunction(SetDisplayOptionsForProgressBar,
 function(options)
-    PB_SetDisplayOptions(PB_DisplayOptions, options);
+    PB_SetOptions(PB_DisplayOptions, options);
 end);
 
 InstallGlobalFunction(ResetDisplayOptionsForProgressBar,
@@ -457,29 +457,129 @@ end);
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
 
+BindGlobal("PB_ProcessPrinter", rec(
+	DefaultOptions := rec(
+		# alignHorizontal := "left",
+		# alignVertical := "top",
+		fillWidth := false,
+		# fillHeight := false,
+		sync := false,
+	)
+	# A pattern consist of composition blocks (inner node) and printer blocks (leave node)
+	Pattern := rec(
+		id := "process",
+		options := rec(),
+		isActive := ReturnTrue,
+		children := [
+			id := "bottom line",
+			options := rec(
+				fillWidth := true # choose bounds for boxes to fill the width of the terminal, possibly by adding an empty block
+			),
+			isActive := ReturnTrue,
+			children := [
+				rec(
+					id := "progress bar",
+					options := rec(),
+					isActive := ReturnTrue,
+					printer := PB_ProgressRatioPrinter,
+					printer_options := rec(),
+				),
+				rec(
+					id := "separator 1",
+					options := rec(),
+					isActive := ReturnTrue,
+					printer := PB_SeparatorPrinter,
+					printer_options := rec(),
+				),
+				rec(
+					id := "progress ratio",
+					options := rec(
+						sync := true, # sync x-position, width and height among all blocks with this id
+					),
+					isActive := ReturnTrue,
+					printer := PB_IterationPrinter,
+					printer_options := rec(),
+				),
+			]
+		]
+	),
+	Blocks := rec(
+		"process_id" := rec(
+			"block_id" := [x, y, w, h],
+		),
+	)
+	AllocateBlocks := function(process, block..)
+		local options, bounds;
+		if Length(block) = 0 then
+			block := ~.Pattern;
+		fi;
+		options := ShallowCopy(DefaultOptions);
+		PB_SetOptions(options, block.options);
+	end,
+));
 
-# The Process Printer has an internal list of Printers for smaller parts, and deals with the "communication" of those Printers.
-# It stores global information in PB_State that is shared between all Printers.
-# A Printer is a record with a reserveSpace, a print and a refresh function.
-# The reserveSpace function returns an integer
-# that states how many characters need to be reserved for this part of the printing process.
-# It may be zero, if no space is needed. (For example if space needs to be allocated during runtime.)
-# It returns fail, if further information is required to compute the amount of space needed.
-# The print and refresh function get as input a process and the amount of reserved space.
-
-BindGlobal("PB_PrintProcess", function(process)
-	return;
-end);
+BindGlobal("PB_ProgressRatioPrinter", rec(
+	bounds := function(process)
+		return PB_NrDigits(process.nrSteps) * 2 + 1;
+	end,
+	regenerate := function(process, options)
+		PB_Print(Concatenation(String(curStep, options.nr_digits), "/", String(nrSteps)));
+	end,
+	refresh := function(process, options)
+		PB_Print(String(curStep, options.nr_digits));
+	end,
+));
 
 BindGlobal("PB_SeparatorPrinter", rec(
-	ReserveSpace := function(process)
+	bounds := function(process)
 		return Length(PB_DisplayOptions.separator);
 	end,
-	Print := function(process, space)
+	regenerate := function(process, options)
 		PB_Print(PB_DisplayOptions.separator);
 	end,
-	Refresh := function(process, space)
+	refresh := function(process, options)
 		return;
+	end,
+));
+
+BindGlobal("PB_ProgressBarPrinter", rec(
+	bounds := function(process)
+		return 0;
+	end,
+	regenerate := function(process, options)
+		local r, bar_length, bar_length_full, bar_length_empty;
+		# progress bar length
+		r := process.curStep / process.nrSteps;
+		bar_length := options.width - Length(PB_DisplayOptions.bar_prefix) - Length(PB_DisplayOptions.bar_suffix);
+		bar_length_full := Int(bar_length * r);
+		bar_length_empty := bar_length - bar_length_full;
+		# print progress bar
+		PB_Print(PB_DisplayOptions.bar_prefix);
+		if bar_length_full > 0 then
+			PB_Print(Concatenation(ListWithIdenticalEntries(bar_length_full, PB_DisplayOptions.bar_symbol_full)));
+		fi;
+		if bar_length_empty > 0 then
+			PB_Print(Concatenation(ListWithIdenticalEntries(bar_length_empty, PB_DisplayOptions.bar_symbol_empty)));
+		fi;
+		PB_Print(PB_DisplayOptions.bar_suffix);
+		# save data
+		process.bar_length := bar_length;
+		process.bar_length_full := bar_length_full;
+	end,
+	refresh := function(process, options)
+		local local r, bar_length, bar_length_full;
+		# progress bar length
+		r := curStep / nrSteps;
+		bar_length := process.bar_length;
+		bar_length_full := Int(bar_length * r);
+		# print progress bar
+		PB_MoveCursorRight(Length(PB_DisplayOptions.bar_prefix) + process.bar_length_full + 1);
+		l := bar_length_full - process.bar_length_full;
+		if l > 0 then
+			PB_Print(Concatenation(ListWithIdenticalEntries(l, PB_DisplayOptions.bar_symbol_full)));
+		fi;
+		# save data
+		process.bar_length_full := bar_length_full;
 	end,
 ));
 
