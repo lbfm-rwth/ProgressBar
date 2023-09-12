@@ -457,6 +457,7 @@ end);
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
 
+
 BindGlobal("PB_ProgressRatioPrinter", rec(
 	dimension := function(process)
 		return rec(
@@ -544,6 +545,7 @@ end);
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
+
 
 PB_Printer.BlockOptionsDefault := Immutable(rec(
 	# blocks that are aligned horizontal need to have equal y-coordinates and heights
