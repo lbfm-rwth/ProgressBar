@@ -32,7 +32,7 @@
 
 PB_Process := fail;
 PB_Terminal := fail;
-PB_State := fail;
+PB_Printer := rec();
 
 
 #############################################################################
@@ -452,89 +452,34 @@ end);
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
-## Progress Bar : Printer
+## Progress Bar : Printer Blocks
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
 
-BindGlobal("PB_ProcessPrinter", rec(
-	DefaultOptions := rec(
-		# alignHorizontal := "left",
-		# alignVertical := "top",
-		fillWidth := false,
-		# fillHeight := false,
-		sync := false,
-	)
-	# A pattern consist of composition blocks (inner node) and printer blocks (leave node)
-	Pattern := rec(
-		id := "process",
-		options := rec(),
-		isActive := ReturnTrue,
-		children := [
-			id := "bottom line",
-			options := rec(
-				fillWidth := true # choose bounds for boxes to fill the width of the terminal, possibly by adding an empty block
-			),
-			isActive := ReturnTrue,
-			children := [
-				rec(
-					id := "progress bar",
-					options := rec(),
-					isActive := ReturnTrue,
-					printer := PB_ProgressRatioPrinter,
-					printer_options := rec(),
-				),
-				rec(
-					id := "separator 1",
-					options := rec(),
-					isActive := ReturnTrue,
-					printer := PB_SeparatorPrinter,
-					printer_options := rec(),
-				),
-				rec(
-					id := "progress ratio",
-					options := rec(
-						sync := true, # sync x-position, width and height among all blocks with this id
-					),
-					isActive := ReturnTrue,
-					printer := PB_IterationPrinter,
-					printer_options := rec(),
-				),
-			]
-		]
-	),
-	Blocks := rec(
-		"process_id" := rec(
-			"block_id" := [x, y, w, h],
-		),
-	)
-	AllocateBlocks := function(process, block..)
-		local options, bounds;
-		if Length(block) = 0 then
-			block := ~.Pattern;
-		fi;
-		options := ShallowCopy(DefaultOptions);
-		PB_SetOptions(options, block.options);
-	end,
-));
-
 BindGlobal("PB_ProgressRatioPrinter", rec(
-	bounds := function(process)
-		return PB_NrDigits(process.nrSteps) * 2 + 1;
+	dimension := function(process)
+		return rec(
+			w := PB_NrDigits(process.nrSteps) * 2 + 1,
+			h := 1
+		);
 	end,
-	regenerate := function(process, options)
-		PB_Print(Concatenation(String(curStep, options.nr_digits), "/", String(nrSteps)));
+	generate := function(process, options)
+		PB_Print(Concatenation(String(process.curStep, options.nr_digits), "/", String(process.nrSteps)));
 	end,
 	refresh := function(process, options)
-		PB_Print(String(curStep, options.nr_digits));
+		PB_Print(String(process.curStep, options.nr_digits));
 	end,
 ));
 
 BindGlobal("PB_SeparatorPrinter", rec(
-	bounds := function(process)
-		return Length(PB_DisplayOptions.separator);
+	dimension := function(process)
+		return rec(
+			w := Length(PB_DisplayOptions.separator),
+			h := 1
+		);
 	end,
-	regenerate := function(process, options)
+	generate := function(process, options)
 		PB_Print(PB_DisplayOptions.separator);
 	end,
 	refresh := function(process, options)
@@ -543,10 +488,13 @@ BindGlobal("PB_SeparatorPrinter", rec(
 ));
 
 BindGlobal("PB_ProgressBarPrinter", rec(
-	bounds := function(process)
-		return 0;
+	dimension := function(process)
+		return rec(
+			w := fail,
+			h := 1
+		);
 	end,
-	regenerate := function(process, options)
+	generate := function(process, options)
 		local r, bar_length, bar_length_full, bar_length_empty;
 		# progress bar length
 		r := process.curStep / process.nrSteps;
@@ -567,9 +515,9 @@ BindGlobal("PB_ProgressBarPrinter", rec(
 		process.bar_length_full := bar_length_full;
 	end,
 	refresh := function(process, options)
-		local local r, bar_length, bar_length_full;
+		local r, bar_length, bar_length_full, l;
 		# progress bar length
-		r := curStep / nrSteps;
+		r := process.curStep / process.nrSteps;
 		bar_length := process.bar_length;
 		bar_length_full := Int(bar_length * r);
 		# print progress bar
@@ -592,6 +540,259 @@ end);
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
+## Progress Bar : Printer
+##                                                                         ##
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+#############################################################################
+
+PB_Printer.BlockOptionsDefault := Immutable(rec(
+	# blocks that are aligned horizontal need to have equal y-coordinates and heights
+	# blocks that are aligned vertical need to have equal x-coordinates and widths
+	# align := "horizontal", # "vetical"
+	sync := fail,
+));
+
+# A pattern consist of composition blocks (inner node) and printer blocks (leave node)
+PB_Printer.Pattern := rec(
+	id := "process",
+	options := rec(),
+	isActive := ReturnTrue,
+	children := [
+		rec(
+			id := "bottom line",
+			options := rec(),
+			isActive := ReturnTrue,
+			children := [
+				rec(
+					id := "progress bar",
+					options := rec(),
+					isActive := ReturnTrue,
+					printer := PB_ProgressBarPrinter,
+					printer_options := rec(),
+				),
+				rec(
+					id := "separator 1",
+					options := rec(),
+					isActive := ReturnTrue,
+					printer := PB_SeparatorPrinter,
+					printer_options := rec(),
+				),
+				rec(
+					id := "progress ratio",
+					options := rec(
+						# sync x-position and width among all blocks with this id
+						sync := ["x", "w"]
+					),
+					isActive := ReturnTrue,
+					printer := PB_ProgressRatioPrinter,
+					printer_options := rec(),
+				),
+			]
+		)
+	]
+);
+
+# A configuration is a list containing entries describing linear equalities
+# An entry is of the form `[ factor, rec(id, param), ..., a ]`
+# which is interpreted as `factor * id.param + ... = a`
+PB_Printer.InitialConfiguration := [
+	[ # bottom line fills terminal width
+		1, rec(id := "bottom line", 	param := "x"),
+		1, rec(id := "bottom line", 	param := "w"),
+		-1, rec(id := "process", 		param := "x"),
+		-1, rec(id := "process",		param := "w"),
+		0
+	],
+];
+
+# get bounding box of block
+BindGlobal("PB_GetBounds", function(process, block)
+	local bounds;
+	if IsBound(process.blocks.(block.id)) then
+		bounds := process.blocks.(block.id);
+	else
+		process.blocks.(block.id) := rec(x := fail, y := fail, w := fail, h := fail);
+		bounds := process.blocks.(block.id);
+	fi;
+	return bounds;
+end);
+
+# get bounding box of block
+InstallGlobalFunction("PB_SetBounds", function(process, block, values)
+	local bounds, param, i, child;
+	bounds := PB_GetBounds(process, block);
+	for param in ["x", "y", "w", "h"] do
+		i := Position(PB_Printer.Variables, rec(id := block.id, param := param));
+		bounds.(param) := values[i];
+	od;
+	if IsBound(block.children) then
+		for child in block.children do
+			PB_SetBounds(process, child, values);
+		od;
+	fi;
+end);
+
+InstallGlobalFunction("PB_InitializeParent", function(block, parent)
+	local child;
+	block.parent := parent;
+	if IsBound(block.children) then
+		for child in block.children do
+			PB_InitializeParent(child, block);
+		od;
+	fi;
+end);
+
+# node sets dimensions of itself
+InstallGlobalFunction("PB_InitializeDimension", function(process, block, configuration)
+	local bounds, child, dim, dir;
+	# composition block (inner node)
+	if IsBound(block.children) then
+		for child in block.children do
+			PB_InitializeDimension(process, child, configuration);
+		od;
+	# printer block (leave node)
+	else
+		dim := block.printer.dimension(process);
+		bounds := PB_GetBounds(process, block);
+		for dir in ["w", "h"] do
+			bounds.(dir) := dim.(dir);
+			if bounds.(dir) <> fail then
+				Add(configuration, [1, rec(id := block.id, param := dir), bounds.(dir)]);
+			fi;
+		od;
+	fi;
+end);
+
+InstallGlobalFunction("PB_InitializeVariables", function(block)
+	local param, child;
+	for param in ["x", "y", "w", "h"] do
+		Add(PB_Printer.Variables, rec(id := block.id, param := param));
+	od;
+	if IsBound(block.children) then
+		for child in block.children do
+			PB_InitializeVariables(child);
+		od;
+	fi;
+end);
+
+BindGlobal("PB_MatrixConfiguration", function(configuration)
+	local M, b, n, c, column, m, i, j;
+	M := [];
+	b := [];
+	n := Length(PB_Printer.Variables);
+	for c in configuration do
+		column := ListWithIdenticalEntries(n, 0);
+		m := Length(c);
+		for i in [1 .. (m - 1) / 2] do
+			j := Position(PB_Printer.Variables, c[2 * i]);
+			column[j] := c[2 * i - 1];
+		od;
+		Add(M, column);
+		Add(b, c[m]);
+	od;
+	return rec(M := M, b := b);
+end);
+
+InstallGlobalFunction("PB_AlignBlock", function(block)
+	local c, child, i;
+	# composition block (inner node)
+	if IsBound(block.children) then
+		# width
+		c := [];
+		for child in block.children do
+			Append(c, [1, rec(id := child.id, param := "w")]);
+		od;
+		Append(c, [-1, rec(id := block.id, param := "w")]);
+		Add(c, 0);
+		Add(PB_Printer.Configuration, c);
+		# height
+		for child in block.children do
+			c := [];
+			Append(c, [1, rec(id := child.id, param := "h")]);
+			Append(c, [-1, rec(id := block.id, param := "h")]);
+			Add(c, 0);
+			Add(PB_Printer.Configuration, c);
+		od;
+		# x-coordinate
+		c := [];
+		Append(c, [1, rec(id := block.children[1].id, param := "x")]);
+		Append(c, [-1, rec(id := block.id, param := "x")]);
+		Add(c, 0);
+		Add(PB_Printer.Configuration, c);
+		for i in [1 .. Length(block.children) - 1] do
+			c := [];
+			Append(c, [1, rec(id := block.children[i].id, param := "x")]);
+			Append(c, [1, rec(id := block.children[i].id, param := "w")]);
+			Append(c, [-1, rec(id := block.children[i + 1].id, param := "x")]);
+			Add(c, 0);
+			Add(PB_Printer.Configuration, c);
+		od;
+		# y-coordinate
+		for child in block.children do
+			c := [];
+			Append(c, [1, rec(id := child.id, param := "y")]);
+			Append(c, [-1, rec(id := block.id, param := "y")]);
+			Add(c, 0);
+			Add(PB_Printer.Configuration, c);
+		od;
+		# recursion
+		for child in block.children do
+			PB_AlignBlock(child);
+		od;
+	fi;
+end);
+
+BindGlobal("PB_AllocateBlocks", function(process)
+	local block, bounds, param, data, configuration, M, b, values;
+	# initilize terminal
+	PB_Terminal.widthScreen := SizeScreen()[1] - 1;
+	# initalize process block
+	block := PB_Printer.Pattern;
+	bounds := PB_GetBounds(process, block);
+	bounds.x := 1;
+	bounds.y := Sum(PB_Upper(process), upper -> upper.blocks.(block.id).h) + 1;
+	bounds.w := PB_Terminal.widthScreen;
+	# initialize parents
+	if not IsBound(block.parent) then
+		PB_InitializeParent(block, fail);
+	fi;
+	# initialize variables for bounds
+	if not IsBound(PB_Printer.Variables) then
+		PB_Printer.Variables := [];
+		PB_InitializeVariables(block);
+	fi;
+	# compute configuration via align
+	if not IsBound(PB_Printer.Configuration) then
+		PB_Printer.Configuration := [];
+		for param in ["x", "y", "w"] do
+			Add(PB_Printer.Configuration, [1, rec(id := block.id, param := param), bounds.(param)]);
+		od;
+		Append(PB_Printer.Configuration, PB_Printer.InitialConfiguration);
+		PB_AlignBlock(block);
+		data := PB_MatrixConfiguration(PB_Printer.Configuration);
+		PB_Printer.M := data.M;
+		PB_Printer.b := data.b;
+	fi;
+	# initialize all dimensions of the printer blocks
+	# some might be fail, if they are dynamic
+	configuration := [];
+	PB_InitializeDimension(process, block, configuration);
+	# compute matrix configuration for process
+	data := PB_MatrixConfiguration(configuration);
+	M := data.M;
+	b := data.b;
+	Append(M, PB_Printer.M);
+	Append(b, PB_Printer.b);
+	TransposedMatDestructive(M);
+	# solve linear equations and set all bounds
+	values := SolutionIntMat(M, b);
+	PB_SetBounds(process, block, values);
+end);
+
+
+#############################################################################
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+##                                                                         ##
 ## Progress Bar
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
@@ -605,7 +806,7 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 
 	# initialization
 	options := ShallowCopy(PB_DisplayOptions);
-	PB_SetDisplayOptions(options, process.options);
+	PB_SetOptions(options, process.options);
 	root := PB_Process;
 	PB_Terminal.widthScreen := SizeScreen()[1] - 1;
 	PB_Terminal.nr_digits := PB_NrDigits(PB_ProcessMaxSteps(root));
@@ -811,10 +1012,15 @@ InstallGlobalFunction("DeclareProcess", function(args...)
 		nrLines := 0,
 		# options of process overriding the global options
 		options := options,
+		# bounding box of the printing blocks, i.e. the positions and dimensions
+		# saved as records with entries of the form "id" : rec(x, y, w, h).
+		# The coordinate (x := 1, y := 1) marks the top left corner of the root process.
+		blocks := rec(),
 	);
 
 	if parent = fail then
-		PB_HideCursor();
+		# TODO: FixMe
+		# PB_HideCursor();
 		PB_Process := process;
 		PB_Terminal := rec(
 			cursorVerticalPos := 1,
