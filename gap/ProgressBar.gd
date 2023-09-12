@@ -148,3 +148,8 @@ DeclareGlobalFunction( "PB_Perform" );
 DeclareGlobalFunction( "PB_ChildrenAndSelf" );
 DeclareGlobalFunction( "PB_UpperUntilCaller" );
 DeclareGlobalFunction( "PB_PrintProgress" );
+DeclareGlobalFunction( "PB_InitializeParent" );
+DeclareGlobalFunction( "PB_InitializeDimension" );
+DeclareGlobalFunction( "PB_InitializeVariables" );
+DeclareGlobalFunction( "PB_AlignBlock" );
+DeclareGlobalFunction( "PB_SetBounds" );
