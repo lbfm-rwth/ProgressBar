@@ -72,9 +72,11 @@ DeclareGlobalFunction( "ResetDisplayOptionsForProgressBar" );
 #############################################################################
 
 
+DeclareGlobalFunction( "IteratorProcess" );
+
 ## <#GAPDoc Label="DeclareProcess">
 ## <ManSection>
-## <Func Name="DeclareProcess" Arg="nrSteps[, parent, id][, title][, optrec]"/>
+## <Func Name="DeclareProcess" Arg="nrSteps[, id[, parent[, content]]]"/>
 ## <Description>
 ##   Call this function to declare a process. <P/>
 ##   Returns the declared process. (see Chapter  <Ref Chap="Intro"/> for examples) <P/>
@@ -93,27 +95,10 @@ DeclareGlobalFunction( "ResetDisplayOptionsForProgressBar" );
 ## <#/GAPDoc>
 DeclareGlobalFunction( "DeclareProcess" );
 
-## <#GAPDoc Label="StartProcess">
-## <ManSection>
-## <Func Name="StartProcess" Arg="process"/>
-## <Func Name="StartProcess" Arg="nrSteps[, parent, id][, title][, optrec]"/>
-## <Description>
-##   Call this function before the start of a process.
-##   (For example exactly in the line above the <C>for</C> keyword in a loop) <P/>
-##   Returns the started process (see Chapter <Ref Chap="Intro"/> for examples) <P/>
-##   If the process has already been declared, one can call this function with only one argument <A>process</A>,
-##   which must be either a process record or the id (string) of a valid process.
-##   Otherwise one has to use the function with arguments as specified
-##   in <Ref Func="DeclareProcess"/> to declare the process.
-## </Description>
-## </ManSection>
-## <#/GAPDoc>
-DeclareGlobalFunction( "StartProcess" );
-
 ## <#GAPDoc Label="UpdateProcess">
 ## <ManSection>
 ## <Func Name="UpdateProcess" Arg=""/>
-## <Func Name="UpdateProcess" Arg="process[, title][, optrec]"/>
+## <Func Name="UpdateProcess" Arg="process[, content]"/>
 ## <Description>
 ##   Call this function at the end of a step of the given process.
 ##   (For example exactly in the line above the <C>od;</C> keyword in a loop) <P/>
@@ -147,7 +132,7 @@ DeclareGlobalFunction( "PB_Reduce" );
 DeclareGlobalFunction( "PB_Perform" );
 DeclareGlobalFunction( "PB_ChildrenAndSelf" );
 DeclareGlobalFunction( "PB_UpperUntilCaller" );
-DeclareGlobalFunction( "PB_PrintProgress" );
+DeclareGlobalFunction( "PB_PrintBlock" );
 DeclareGlobalFunction( "PB_InitializeParent" );
 DeclareGlobalFunction( "PB_InitializeDimension" );
 DeclareGlobalFunction( "PB_InitializeVariables" );
