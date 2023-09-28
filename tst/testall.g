@@ -6,7 +6,7 @@
 #
 # LoadPackage( "ProgressBar" );
 
-# TestDirectory(DirectoriesPackageLibrary( "ProgressBar", "tst/files" ),
-#   rec(exitGAP := true));
+TestDirectory(DirectoriesPackageLibrary( "ProgressBar", "tst/dummy" ),
+  rec(exitGAP := true));
 
 # FORCE_QUIT_GAP(1); # if we ever get here, there was an error
