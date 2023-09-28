@@ -164,14 +164,12 @@ BindGlobal("PB_MoveCursorDown", function(move)
 		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # move cursor down X lines
 		PB_Terminal.cursorVerticalPos := PB_Terminal.cursorVerticalPos + move;
 	fi;
-	PB_MoveCursorToStartOfLine();
 end);
 
 BindGlobal("PB_MoveCursorUp", function(move)
 	move := AbsInt(move);
 	WriteAll(STDOut, Concatenation("\033[", String(move), "A")); # move cursor up X lines
 	PB_Terminal.cursorVerticalPos := PB_Terminal.cursorVerticalPos - move;
-	PB_MoveCursorToStartOfLine();
 end);
 
 BindGlobal("PB_MoveCursorToLine", function(n)
@@ -340,6 +338,13 @@ InstallGlobalFunction("PB_Perform", function(process, func)
 	od;
 end);
 
+BindGlobal("PB_AllProcesses", function()
+	local L;
+	L := [];
+	PB_Perform(PB_Process, function(proc) Add(L, proc); end);
+	return L;
+end);
+
 BindGlobal("PB_ProcessMaxSteps", function(process)
 	return PB_Reduce(process, {m, proc} -> Maximum(m, proc.nrSteps), 0);
 end);
@@ -493,21 +498,23 @@ BindGlobal("PB_ProgressRatioPrinter", rec(
 		);
 	end,
 	generate := function(process, id, options)
-		local block;
+		local block, curStep;
 		block := process.blocks.(id);
 		block.nr_digits := (block.w - 1) / 2;
 		PB_MoveCursorToCoordinate(block.x, block.y);
-		PB_Print(Concatenation(String(process.curStep, block.nr_digits), "/", String(process.nrSteps, block.nr_digits)));
+		curStep := Maximum(0, process.curStep);
+		PB_Print(Concatenation(String(curStep, block.nr_digits), "/", String(process.nrSteps, block.nr_digits)));
 	end,
 	refresh := function(process, id, options)
-		local block, nr_digits;
+		local block, nr_digits, curStep;
 		block := process.blocks.(id);
-		nr_digits := PB_NrDigits(process.curSteps);
+		curStep := Maximum(0, process.curStep);
+		nr_digits := PB_NrDigits(curStep);
 		if nr_digits > block.nr_digits then
 			return false;
 		fi;
 		PB_MoveCursorToCoordinate(block.x, block.y);
-		PB_Print(String(process.curStep, nr_digits));
+		PB_Print(String(curStep, block.nr_digits));
 		return true;
 	end,
 ));
@@ -560,18 +567,16 @@ BindGlobal("PB_ProgressBarPrinter", rec(
 		block.bar_length_full := bar_length_full;
 	end,
 	refresh := function(process, id, options)
-		local block, r, bar_length, bar_length_full, l;
+		local block, r, bar_length_full, l;
 		block := process.blocks.(id);
 		# progress bar length
 		r := process.curStep / process.nrSteps;
-		bar_length := block.bar_length;
-		bar_length_full := Int(bar_length * r);
+		bar_length_full := Int(block.bar_length * r);
 		# print progress bar
 		l := bar_length_full - block.bar_length_full;
 		if l > 0 then
-			PB_MoveCursorToCoordinate(block.x, block.y);
-			PB_MoveCursorRight(Length(options.bar_prefix) + block.bar_length_full + 1);
-			PB_Print(Concatenation(ListWithIdenticalEntries(l, options.bar_symbol_full)));
+			PB_MoveCursorToCoordinate(block.x + Length(options.bar_prefix) + block.bar_length_full, block.y);
+			PB_Print(String(Concatenation(ListWithIdenticalEntries(l, options.bar_symbol_full))));
 		fi;
 		# save data
 		block.bar_length_full := bar_length_full;
@@ -629,7 +634,7 @@ BindGlobal("PB_IndentPrinter", rec(
 		PB_MoveCursorToCoordinate(block.x, block.y);
 		PB_Print(indent);
 	end,
-	refreseh := function(process, id, options)
+	refresh := function(process, id, options)
 		return true;
 	end,
 ));
@@ -654,7 +659,7 @@ PB_Printer.PatternOptionsDefault := Immutable(rec(
 	# blocks that are aligned horizontally need to have equal y-coordinates and heights
 	# blocks that are aligned vertically need to have equal x-coordinates and widths
 	align := "horizontal", # "vetical"
-	sync := fail,
+	sync := [],
 ));
 
 # A pattern contains the following entries
@@ -796,24 +801,45 @@ end);
 
 # node sets dimensions of itself
 InstallGlobalFunction("PB_InitializeDimension", function(process, pattern)
-	local bounds, children, child, dim, dir;
+	local bounds, children, child, dim, dir, value, options, interlinked;
+	interlinked := false;
 	# inner node
 	if IsBound(pattern.children) then
 		children := Filtered(pattern.children, child -> child.isActive(process));
 		for child in children do
-			PB_InitializeDimension(process, child);
+			interlinked := interlinked or PB_InitializeDimension(process, child);
 		od;
 	# leaf node
 	else
+		options := ShallowCopy(PB_Printer.PatternOptionsDefault);
+		PB_SetOptions(options, pattern.options);
 		dim := pattern.printer.dimension(process, pattern.printer_options);
 		bounds := PB_GetBounds(process, pattern);
 		for dir in ["w", "h"] do
-			bounds.(dir) := dim.(dir);
+			if dir in options.sync and process <> PB_Process then
+				value := PB_Process.blocks.(pattern.id).(dir);
+				if value < dim.(dir) then
+					value := dim.(dir);
+					PB_Perform(PB_Process, function(proc)
+						local pos;
+						if proc <> process then
+							pos := Position(proc.configurationRecord, [1, rec(id := pattern.id, param := dir), PB_GetBounds(proc, pattern).(dir)]);
+							proc.configurationRecord[pos] := [1, rec(id := pattern.id, param := dir), value];
+							proc.configurationSystem.b[pos] := value;
+						fi;
+					end);
+					interlinked := true;
+				fi;
+			else
+				value := dim.(dir);
+			fi;
+			bounds.(dir) := value;
 			if bounds.(dir) <> fail then
 				Add(process.configurationRecord, [1, rec(id := pattern.id, param := dir), bounds.(dir)]);
 			fi;
 		od;
 	fi;
+	return interlinked;
 end);
 
 InstallGlobalFunction("PB_InitializeVariables", function(pattern)
@@ -925,7 +951,7 @@ InstallGlobalFunction("PB_AlignBlock", function(process, pattern)
 end);
 
 BindGlobal("PB_AllocateBlocks", function(process)
-	local pattern, bounds, param, data, configuration, M, b, values;
+	local pattern, bounds, param, data, configuration, interlinked, procs, proc, M, b, values;
 	# initalize process pattern
 	process.blocks := rec();
 	pattern := PB_Printer.Pattern;
@@ -951,15 +977,23 @@ BindGlobal("PB_AllocateBlocks", function(process)
 	Append(process.configurationRecord, PB_Printer.InitialConfigurationRecord);
 	PB_AlignBlock(process, pattern);
 	# add configurations via dimensions of the printer blocks,
-	# whereas some might still be set to fail, if they are dynamic
-	PB_InitializeDimension(process, pattern);
+	# whereas some might still be set to fail, if they are dynamic.
+	interlinked := PB_InitializeDimension(process, pattern);
 	# compute configuration system for process
 	process.configurationSystem := PB_ConfigurationSystem(process.configurationRecord);
 	# solve linear system and set all bounds
-	M := process.configurationSystem.M;
-	b := process.configurationSystem.b;
-	values := SolutionIntMat(M, b);
-	PB_SetBounds(process, pattern, values);
+	if interlinked then
+		procs := PB_AllProcesses();
+	else
+		procs := [process];
+	fi;
+	for proc in procs do
+		M := proc.configurationSystem.M;
+		b := proc.configurationSystem.b;
+		values := SolutionIntMat(M, b);
+		PB_SetBounds(proc, pattern, values);
+	od;
+	return interlinked;
 end);
 
 
@@ -993,28 +1027,30 @@ InstallGlobalFunction("PB_PrintBlock", function(process, pattern, doGenerate)
 	fi;
 end);
 
-BindGlobal("PB_PrintProcess", function(process, isCurrent)
-	local doGenerate;
+BindGlobal("PB_PrintProcess", function(process, doGenerate)
+	local interlinked;
 
-	doGenerate := false;
+	interlinked := false;
 
-	if process <> isCurrent then
+	if process.blocks = rec() then
+		interlinked := PB_AllocateBlocks(process);
 		doGenerate := true;
 	fi;
 
-	if process.blocks = rec() then
-		PB_AllocateBlocks(process);
+	if process.curStep < 0 then
 		doGenerate := true;
 	fi;
 
 	if PB_PrintBlock(process, PB_Printer.Pattern, doGenerate) = false then
-		PB_AllocateBlocks(process);
+		interlinked := PB_AllocateBlocks(process);
 		PB_PrintBlock(process, PB_Printer.Pattern, true);
 	fi;
+
+	return interlinked;
 end);
 
 BindGlobal("PB_PrintProgress", function(process)
-	local proc, child, root;
+	local proc, child, root, interlinked, procs;
 
 	# Did root process start?
 	root := PB_Process;
@@ -1025,25 +1061,33 @@ BindGlobal("PB_PrintProgress", function(process)
 			usedLines := 1,
 			screenWidth := SizeScreen()[1] - 1,
 		);
-		# PB_HideCursor();
+		PB_HideCursor();
 	fi;
 
 	# Is current process different to last time?
 	if IsBound(PB_Printer.curProcess) and PB_Printer.curProcess.id <> process.id then
 		proc := PB_Printer.curProcess;
 		PB_Printer.curProcess := process;
-		PB_PrintProcess(proc, false);
+		PB_PrintProcess(proc, true);
 	else
 		PB_Printer.curProcess := process;
 	fi;
 
 	# Print current process
-	PB_PrintProcess(process, true);
+	interlinked := PB_PrintProcess(process, false);
+	if interlinked then
+		procs := PB_AllProcesses();
+		for proc in procs do
+			if proc <> process then
+				PB_PrintProcess(proc, true);
+			fi;
+		od;
+	fi;
 
 	# Print all descendants
 	for child in process.children do
 		PB_Perform(child, function(proc)
-			PB_PrintProcess(proc, false);
+			PB_PrintProcess(proc, true);
 		end);
 	od;
 
