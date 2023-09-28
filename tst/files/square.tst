@@ -1,4 +1,4 @@
-gap> ReadPackage("ProgressBar", "tst/shapes.g");
+gap> ReadPackage("ProgressBar", "tst/shapes.g");;
 gap> PrintSquare(5, "=");
 ==========
 =        =
