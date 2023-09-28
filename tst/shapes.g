@@ -11,6 +11,7 @@ end;
 # width: n
 PrintSquare := function(n, s)
     local i, ss;
+    ResetTerminal();
     ss := String(Concatenation(ListWithIdenticalEntries(2, s)));
     PB_Print(String(Concatenation(ListWithIdenticalEntries(n, ss))));
     for i in [2 .. n - 1] do
@@ -30,6 +31,7 @@ end;
 # height: m
 PrintDots := function(n, m, s)
     local i, j;
+    ResetTerminal();
     for i in [1 .. n] do
         for j in [1 .. m] do
             PB_MoveCursorToCoordinate(2 * i - 1, j);
