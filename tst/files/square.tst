@@ -22,14 +22,3 @@ gap> PrintSquare(9, "*");
 *                *
 *                *
 ******************
-gap> PrintDots(10, 10, "o");
-o o o o o o o o o o
-o o o o o o o o o o
-o o o o o o o o o o
-o o o o o o o o o o
-o o o o o o o o o o
-o o o o o o o o o o
-o o o o o o o o o o
-o o o o o o o o o o
-o o o o o o o o o o
-o o o o o o o o o o
