@@ -11,23 +11,57 @@
 ===============================================================================
 ============================================================================-->
 
+
 <Chapter Label="Functions">
 <Heading>Functions</Heading>
 
-Here we include a list of all functions that are provided to the User.<P/>
+Here we include a list of all functions that are provided to the user.<P/>
+
+
+<!--===========================================================================
+||||  Terminology                                                          ||||
+============================================================================-->
+
+<Section Label="Terminology">
+<Heading>Terminology</Heading>
+
+Abstractly speaking, a <E>process</E> is a series of actions or steps taken in order to achieve a particular end. <P/>
+
+A step might be broken down into smaller steps, and thus we can think of a step as a (sub-)process.
+In this case, we call the larger process the <E>parent (process)</E> and the nested (sub-)process the <E>child (process)</E>.
+Therefore a process naturally induces a tree graph via the parent-child relations which we call a <E>process tree</E>. <P/>
+
+The <E>progress</E> of a process is the measure how close we are to the end.
+The process has <E>terminated</E> when the end is reached.<P/>
+
+Displaying the progress of a process means that we only show information about the current state of the process,
+whilst removing all visual references to the past states. <P/>
+
+A change of one step to the next is called the <E>progression</E> of a process.
+We update the display on the terminal screen for each progression automatically. <P/>
+
+This package displays the progress of exactly one main process, which we call the <E>root (process)</E>. <P/>
+
+</Section>
+
 
 <!--===========================================================================
 ||||  Process Functions                                                    ||||
 ============================================================================-->
 
+
 <Section Label="Process Functions">
 <Heading>Process Functions</Heading>
 
-<#Include Label="DeclareProcess">
+<#Include Label="ProcessIterator">
 
-<#Include Label="StartProcess">
+<#Include Label="SetProcess">
 
 <#Include Label="UpdateProcess">
+
+<#Include Label="RefreshProcess">
+
+<#Include Label="ResetProcess">
 
 </Section>
 
@@ -40,52 +74,146 @@ Here we include a list of all functions that are provided to the User.<P/>
 <Section Label="Display Functions">
 <Heading>Display Options</Heading>
 
-The methods <F>DeclareProcess</F>, <F>StartProcess</F> and <F>UpdateProcess</F>
-allow an optional argument <A>optrec</A> which must be a record
-and modifies the display output for the execution of only this single command. <P/>
-
-For modifying the display output globally for all subsequent executions of the above functions
-see <Ref Func="SetDisplayOptionsForProgressBar"/>. <P/>
+The default process printer can be modified via the global display options,
+see <Ref Func="SetDisplayOptionsOfProgressBar"/>. <P/>
 
 The following components of <A>optrec</A> are supported.
 
 <List>
+
+<Mark><C>printID</C></Mark>
+<Item>
+<K>true</K> to print id of process in the header. <P/>
+<K>false</K> to suppress id printing. <E><M>\leftarrow</M> DEFAULT</E> <P/>
+</Item>
+
 <Mark><C>printTotalTime</C></Mark>
 <Item>
-<K>true</K> to print total time (of root process). <P/>
-<K>false</K> to suppress total time. <E>DEFAULT</E> <P/>
+<K>true</K> to print total time. <P/>
+<K>false</K> to suppress total time. <E><M>\leftarrow</M> DEFAULT</E> <P/>
 </Item>
+
+<Mark><C>printTotalTimeOnlyForRoot</C></Mark>
+<Item>
+<K>true</K> to print total time only in the header of the root, if enabled. <E><M>\leftarrow</M> DEFAULT</E> <P/>
+<K>false</K> to print total time for each process, if enabled. <P/>
+</Item>
+
 <Mark><C>printETA</C></Mark>
 <Item>
-<K>true</K> to print eta (expected time of arrival/completion). <E>DEFAULT</E> <P/>
-<K>false</K> to suppress eta. <P/>
+<K>true</K> to print eta (expected time of arrival/completion). <P/>
+<K>false</K> to suppress eta. <E><M>\leftarrow</M> DEFAULT</E> <P/>
 </Item>
-<Mark><C>removeChildren</C></Mark>
+
+<Mark><C>printETAOnlyForRoot</C></Mark>
 <Item>
-<K>true</K> to remove child process after its termination. <E>DEFAULT</E> <P/>
-<K>false</K> to keep child process after its termination. <P/>
+<K>true</K> to print eta only in the header of the root, if enabled. <E><M>\leftarrow</M> DEFAULT</E> <P/>
+<K>false</K> to print eta for each process, if enabled. <P/>
 </Item>
+
 <Mark><C>highlightCurStep</C></Mark>
 <Item>
 <K>true</K> to highlight current process. <P/>
-<K>false</K> to suppress highlighting. <E>DEFAULT</E> <P/>
+<K>false</K> to suppress highlighting. <E><M>\leftarrow</M> DEFAULT</E> <P/>
 </Item>
+
 <Mark><C>highlightColor</C></Mark>
 <Item>
-<K>"red"</K> for higlighting in red color. <E>DEFAULT</E> <P/>
-<K>"blue"</K> for higlighting in blue color. <P/>
+<K>"red"</K> <E><M>\leftarrow</M> DEFAULT</E> <P/>
+See <Ref Label="Color and Style"/> for available colors. <P/>
 </Item>
+
+<Mark><C>highlightStyle</C></Mark>
+<Item>
+<K>"default"</K> <E><M>\leftarrow</M> DEFAULT</E> <P/>
+See <Ref Label="Color and Style"/> for available styles. <P/>
+</Item>
+
 </List>
 
-<#Include Label="DisplayOptionsForProgressBar">
+<#Include Label="DisplayOptionsOfProgressBar">
 
-<#Include Label="SetDisplayOptionsForProgressBar">
+<#Include Label="SetDisplayOptionsOfProgressBar">
 
-<#Include Label="ResetDisplayOptionsForProgressBar">
+<#Include Label="ResetDisplayOptionsOfProgressBar">
+
+
+<!--===========================================================================
+||||  Color and Style                                                       ||||
+============================================================================-->
+
+
+<Subsection Label="Color and Style">
+<Heading>Color And Style</Heading>
+
+Some display options allow to set a color or a style. The available colors and styles are listed below.
+
+<List>
+<Mark><C>Color</C></Mark>
+<Item>
+<K>"default"</K> is the default printing color of your terminal. This color might dynamically change depending on your local settings like nightmode. <P/>
+<K>other: </K>
+<!-- https://github.com/mbadolato/iTerm2-Color-Schemes/blob/master/windowsterminal/Ubuntu.json -->
+<Alt Only="HTML"><![CDATA[
+<span style="color:#2e3436;"> black </span>,
+<span style="color:#cc0000;"> red </span>,
+<span style="color:#4e9a06;"> green </span>,
+<span style="color:#c4a000;"> yellow </span>,
+<span style="color:#3465a4;"> blue </span>,
+<span style="color:#75507b;"> magenta </span>,
+<span style="color:#06989a;"> cyan </span>,
+<span style="color:#d3d7cf;"> white </span>.
+]]></Alt><Alt Only="LaTeX"><![CDATA[
+\textcolor{myblack}{black},
+\textcolor{myred}{red},
+\textcolor{mygreen}{green},
+\textcolor{myyellow}{yellow},
+\textcolor{myblue}{blue},
+\textcolor{mymagenta}{magenta},
+\textcolor{mycyan}{cyan},
+\textcolor{mywhite}{white}
+]]>
+</Alt><Alt Only="Text">
+black, red, green, yellow, blue, magenta, cyan, white
+</Alt>
+</Item>
+
+<Mark><C>Style</C></Mark>
+<Item>
+<K>"default"</K> is the default printing style of your terminal, usually roman. <P/>
+<K>other: </K>
+<Alt Only="HTML"><![CDATA[
+<b>bold</b> ,
+<span style="color:lightgray;">dim</span> ,
+<i>italic</i> ,
+<u>underline</u> ,
+<span id="blink">blinking</span>.
+<script type="text/javascript">
+    var blink = document.getElementById('blink');
+    setInterval(function() {
+        blink.style.opacity = (blink.style.opacity == 0.2 ? 1 : 0.2);
+    }, 500);
+</script>
+]]></Alt><Alt Only="LaTeX"><![CDATA[
+\textbf{bold},
+\textit{italic},
+\underline{underline},
+blinking
+]]>
+</Alt><Alt Only="Text">
+bold, dim, italic, underline, blinking
+</Alt>
+</Item>
+
+</List>
+
+</Subsection>
 
 </Section>
 
+
 <!--===========================================================================
 ============================================================================-->
+
 
 </Chapter>

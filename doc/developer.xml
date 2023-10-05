@@ -1,0 +1,337 @@
+<!--===========================================================================
+||||  Deveoloper                                                           ||||
+===============================================================================
+||||  This file is part of the ProgressBar package.
+||||
+||||  This file's authors include Friedrich Rober.
+||||
+||||  Please refer to the COPYRIGHT file for details.
+||||
+||||  SPDX-License-Identifier: GPL-2.0-or-later
+===============================================================================
+============================================================================-->
+
+
+<Chapter Label="Progress Printer">
+<Heading>Progress Printer</Heading>
+
+Here we include a guide how to modify the progress printer.
+This chapter is intended for <E>advanced users</E> or <E>developers</E> of the package.<P/>
+
+The <E>progress printer</E> is a framework
+built from a collection of <E>printer moduls</E> that are solely responsible
+to display a specific information about the current state of a process
+e.g. the number of completed iterations or the total runtime.
+Moreover it specifies an abstract <E>layout</E>
+e.g. the positional relations between the individual moduls. <P/>
+
+In the following we explain the terminology of the framework and the technical implementation.
+See also Section <Ref Sect="Terminology"/> for some basic terminology. <P/>
+
+In the end we include an example how to adjust the progress printer. <P/>
+
+
+<!--===========================================================================
+||||  Terminal                                                             ||||
+============================================================================-->
+
+
+<Section Label="Terminal">
+<Heading>Terminal</Heading>
+
+We can think of the <E>terminal</E> as a finite grid of cells
+each indexed by an <C>(x, y)</C>-coordinate and assigned a single character.
+The <E>cursor</E> is an object that occupies the space of exactly one cell.
+We are able to perform the following actions:
+<List>
+<Item>
+move the cursor to an adjacent cell
+</Item>
+<Item>
+overwrite the character of the cell occupied by the cursor
+</Item>
+</List>
+
+The coordinate <C>(1, 1)</C> denotes the cell in the terminal
+where the usual <C>Print</C> command would start to write a character,
+i.e. the initial position of the cursor after hitting the <Q>enter key</Q> on the gap prompt.
+We think of this cell as the top left corner of the space that we reserve to print the progress.
+Increasing the <C>x</C>-coordinate can be understood as movement to the right,
+whereas increasing the <C>y</C>-coordinate as movement to the bottom.
+
+</Section>
+
+
+<!--===========================================================================
+||||  Block                                                                ||||
+============================================================================-->
+
+
+<Section Label="Block">
+<Heading>Block</Heading>
+
+A <E>block</E> is a virtually allocated space in the terminal (see Section <Ref Sect="Terminal"/>)
+in form of a rectangle, a record given by entries <C>(x, y, w, h)</C>,
+where the top left corner of the interior is the cell at the coordinate <C>(x, y)</C>,
+the width is given by <C>w</C> and the height by <C>h</C>,
+i.e. the bottom right corner of the interior is the cell at the coordinate <C>(x + w - 1, y + h - 1)</C>. <P/>
+
+For example we would see something akin to the following
+if we fill the inside of the block <C>(x := 3, y := 2, w := 5, h := 2)</C>
+with the symbols <Q><K>O</K></Q> and use a simple dot <Q><K>.</K></Q> for the outside:<P/>
+
+<Example><![CDATA[
+..........
+..OOOOO...
+..OOOOO...
+..........
+..........
+]]></Example>
+
+Two blocks must either be disjoint or nested into one another,
+in which case we call the larger block the <E>parent</E>
+and the smaller block the <E>child</E>.
+Thus the collection of all blocks naturally form a forest by their parent-child relation, i.e. a set of independent trees.
+The trees are in one-to-one-correspondence with the nodes of the <E>process tree</E>.<P/>
+
+We call a root of such a tree a <E>process block</E>.
+We require that the width of a process block spans the whole terminal screen
+and that they are stacked from top to bottom following the natural ordering of the process tree given by DFS (depth-first search). <P/>
+
+We call an inner node a <E>composition block</E>.
+The interior of such a block must be the disjoint union of the interior of its children,
+and either the children are aligned horizontally within the block, or vertically.
+Visually speaking, we split a composition block into smaller blocks by either using only vertical or horizontal cuts. <P/>
+
+We call a leaf node a <E>printer block</E>.
+This block corresponds to a printer module that is capable of displaying a specific information about the current state of a process inside the block bounds. (See <Ref Sect="Printer Module"/>) <P/>
+
+</Section>
+
+
+<!--===========================================================================
+||||  Layout                                                               ||||
+============================================================================-->
+
+
+<Section Label="Layout">
+<Heading>Layout and Pattern</Heading>
+
+The <E>layout</E> for the printing of all processes is encoded via a single tree.
+We call a node of this tree a <E>pattern</E>, a record whose entries depend on whether it is an inner or a leaf node:
+<List>
+
+<Mark>Any Node</Mark>
+<Item>
+<K>id:</K> unique identifier string <P/>
+<K>layout_options:</K> local layout options record overriding the default <P/>
+<K>isActive:</K> a function that takes as input a process and returns whether the branch starting in this pattern is active
+</Item>
+
+<Mark>Inner Node</Mark>
+<Item>
+<K>children:</K> a list of patterns <P/>
+</Item>
+
+<Mark>Leaf Node</Mark>
+<Item>
+<K>printer:</K> a printer module <P/>
+<K>printer_options:</K> options record for the printer <P/>
+</Item>
+
+</List>
+
+For each process we create blocks from the layout using a recursive strategy:
+If the pattern is active for the given process (<C>pattern.isActive(process) = True</C>),
+we create a block with the given id (stored in <C>process.blocks.id</C>)
+and apply the same strategy for all children of the pattern. <P/>
+
+The parameters of the blocks are determined using the restrictions employed by the <E>layout options</E>, a record with following entries:
+<List>
+
+<Mark>Alignment</Mark>
+<Item>
+<K>"horizontal"</K> all blocks created from children of this pattern have equal <C>y</C>-coordinates and heights <E><M>\leftarrow</M> DEFAULT</E> <P/>
+<K>"vertical"</K>   all blocks created from children of this pattern have equal <C>x</C>-coordinates and widths
+</Item>
+
+<Mark>Sync</Mark>
+<Item>
+<K>[]</K> no syncronization of dimensions among blocks created from this pattern <E><M>\leftarrow</M> DEFAULT</E> <P/>
+<K>["dim", ...]</K> all blocks created from this pattern have equal values for the dimension <A>dim</A>, etc.
+</Item>
+
+</List>
+
+</Section>
+
+
+<!--===========================================================================
+||||  Printer Module                                                       ||||
+============================================================================-->
+
+
+<Section Label="Printer Module">
+<Heading>Printer Module</Heading>
+
+A <E>printer module</E> is responsible for displaying a specific information about the current state of a process
+e.g. the number of completed iterations or the total runtime.
+Technically, it is a record that must contain the following functions as entries
+where the argument <A>options</A> must be valid printer options for this module.
+
+<ManSection>
+<Func Name="dimensions" Arg="process, options"/>
+<Description>
+Returns a dimensions record with entries <C>(w, h)</C> where the dimensions are positive integers or <C>fail</C>. <P/>
+If the values are integers, they specify the smallest dimensions of a block that is capable to display the information about the current state of this process. <P/>
+A value <C>fail</C> indicates that the dimension is unspecified and can be replaced by any arbitrary positive integer. <P/>
+</Description>
+</ManSection>
+
+<ManSection>
+<Func Name="generate" Arg="process, id, options"/>
+<Description>
+Displays the information of this process in the block with identifier <A>id</A>
+under the assumption that the block contains no characters and is large enough to display the information. <P/>
+Therefore the printer usually needs to write characters for most of the interior of the block.
+</Description>
+</ManSection>
+
+<ManSection>
+<Func Name="refresh" Arg="process, id, options"/>
+<Description>
+Displays the information of this process in the block with identifier <A>id</A>
+under the assumption that <C>generate</C> was called beforehand and the block bounds haven't changed since then. <P/>
+Therefore the printer usually just updates a few characters in the terminal.  <P/>
+Returns either <C>Failure</C> or <C>Success</C> depending on whether it is capable to display the information in the block. <P/>
+</Description>
+</ManSection>
+
+</Section>
+
+
+<!--===========================================================================
+||||  Framework                                                            ||||
+============================================================================-->
+
+
+<Section Label="Framework">
+<Heading>Framework</Heading>
+
+A <E>progress printer</E>, as described in the introduction of this chapter,
+is a record that must contain the following entries:
+
+<List>
+
+<Mark>LayoutOptionsDefault</Mark>
+<Item>
+The default layout options of a pattern.
+</Item>
+
+<Mark>Layout</Mark>
+<Item>
+The tree consisting of patterns.
+</Item>
+
+<Mark>InitialConfigurationRecord</Mark>
+<Item>
+A configuration record is a list containing entries describing linear equations.
+These describe additional relations between the blocks created from the patterns of the layout. <P/>
+An entry is of the form <C>[ factor, rec(id, param), ..., a ]</C>
+which is interpreted as <C>factor * id.param + ... = a</C>.
+Here, <C>factor</C> and <C>a</C> must be integers, <C>id</C> the identifier of a pattern in the layout
+and <C>param</C> a parameter of a block, i.e. either <C>"x"</C>, <C>"y"</C>, <C>"w"</C> or <C>"h"</C>.
+</Item>
+
+</List>
+
+The active progress printer is <C>PB_Global.Printer</C>.
+
+</Section>
+
+
+<!--===========================================================================
+||||  Process                                                              ||||
+============================================================================-->
+
+
+<Section Label="Process">
+<Heading>Process</Heading>
+
+See Section <Ref Sect="Terminology"/> for the basic terminology.
+A abstract <E>process</E> is encoded via a <E>process record</E>,
+but we usually omit the distinction between them.
+The record has the following entries:
+
+<List>
+
+<Mark>id</Mark>
+<Item>
+Unique identifier string of the process.
+</Item>
+
+<Mark>parent</Mark>
+<Item>
+A process record.
+</Item>
+
+<Mark>children</Mark>
+<Item>
+List of process records.
+</Item>
+
+<Mark>depth</Mark>
+<Item>
+The depth is a non-negative integer showing how far nested this process is in the root.
+The root has <C>depth = 0</C>. Any other process has <C>depth = parent.depth + 1</C>.
+</Item>
+
+<Mark>totalTime</Mark>
+<Item>
+Total runtime of process after the most recent progression.
+</Item>
+
+<Mark>curStep</Mark>
+<Item>
+The most recent completed step of a process.
+</Item>
+
+<Mark>nrSteps</Mark>
+<Item>
+Number of comleted steps for a process to be marked as terminated.
+</Item>
+
+<Mark>content</Mark>
+<Item>
+Extra content of the process that may be used by a progress printer or printer modules.
+</Item>
+
+<Mark>blocks</Mark>
+<Item>
+A list of blocks, records that at least contain the entries <C>(x, y, w, h)</C>.
+A printer block may be popullated with additional entries by the corresponding printer module.
+</Item>
+
+</List>
+
+</Section>
+
+
+<!--===========================================================================
+||||  Example                                                              ||||
+============================================================================-->
+
+
+<Section Label="Progress Printer Example">
+<Heading>Example</Heading>
+
+
+
+</Section>
+
+
+<!--===========================================================================
+============================================================================-->
+
+
+</Chapter>

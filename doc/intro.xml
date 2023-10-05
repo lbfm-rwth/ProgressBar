@@ -11,13 +11,19 @@
 ===============================================================================
 ============================================================================-->
 
+
 <Chapter Label="Intro">
 <Heading>Introduction</Heading>
 
-This chapter serves as an introduction to the package &ProgressBar;. <P/>
+This chapter serves as an introduction to the package &ProgressBar; and includes many examples. <P/>
 
 The main purpose of this package is to display the progression of a process in the terminal
-via a progress bar that refreshes in the screen after each step of the process.
+via a progress bar that refreshes in the screen after each step of the process. <P/>
+
+Instead of writing new lines in the terminal screen after each step of a process,
+the terminal screen gets refreshed in space.
+This method of displaying information avoids spamming in the terminal,
+and provides an intuitive and clean visualization of a progress.
 
 
 <!--===========================================================================
@@ -29,67 +35,77 @@ via a progress bar that refreshes in the screen after each step of the process.
 <Heading>Example: Loop</Heading>
 
 In the first example we show the simplest use case of the package,
-namely displaying the process of a loop. <P/>
+namely displaying the progression of a loop. <P/>
 
-Before the start of a process we call <F>StartProcess</F>,
-where we specify the number of steps needed to terminate.
-Then after the completion of each step we call <F>UpdateProcess</F>.
+For this we simply wrap an iterator into the function <C>ProcessIterator</C>.
 
 <Example><![CDATA[
 gap> LoadPackage("ProgressBar");;
-gap> doLoop := function(n)
+gap> doLoop := function(n, nSleep)
 >      local i;
->      StartProcess(n);;
->      for i in [1 .. n] do
->        Sleep(1);
->        UpdateProcess();
+>      for i in ProcessIterator([1 .. n]) do
+>        MicroSleep(nSleep);
 >      od;
 >    end;;
-gap> doLoop(7);
+gap> doLoop(7, 10^6/4);
  [===================================================] 100% | 7/7 | eta 0:00:00
 ]]></Example>
 
-The package can also handle very fast updates,
-but keep in mind that it adds some overhead to the computation.
-In this example, the overhead acumulates over the 70 000 iterations to 5 extra seconds
-for a computation that would otherwise only take about 10 seconds.
-
-<Example><![CDATA[
-gap> LoadPackage("ProgressBar");;
-gap> SetDisplayOptionsForProgressBar(rec(printTotalTime := true));;
-gap> doLoop := function(n)
->      local i;
->      StartProcess(n);
->      for i in [1 .. n] do
->        MicroSleep(100);
->        UpdateProcess();
->      od;
->    end;;
-gap> doLoop(70000);;
- | Total Time 0:00:15
- [===========================================] 100% | 70000/70000 | eta 0:00:00
-gap> doLoopWithoutPrint := function(n)
->      local i;
->      StartProcess(1);
->      for i in [1 .. n] do
->        MicroSleep(100);
->      od;
->      UpdateProcess();
->    end;;
-gap> doLoopWithoutPrint(70000);
- | Total Time 0:00:10
- [===================================================] 100% | 1/1 | eta 0:00:00
-gap> ResetDisplayOptionsForProgressBar();;
-]]></Example>
-
-
 In the above example we might encounter the following outputs during the execution of the iteration.
-All these outputs are visible in the same line of the terminal for roughly 1 second.
+All these outputs are visible in the same line of the terminal for roughly 1/4 of a second.
 <Example><![CDATA[
  [=======--------------------------------------------]  14% | 1/7 | eta 0:00:06
  [=====================------------------------------]  42% | 3/7 | eta 0:00:04
  [====================================---------------]  71% | 5/7 | eta 0:00:02
  [===================================================] 100% | 7/7 | eta 0:00:00
+]]></Example>
+
+TODO:
+The package can also handle very fast updates,
+but keep in mind that it adds some overhead to the computation.
+In this example, the overhead acumulates over the TODO iterations to TODO extra seconds
+for a computation that would otherwise only take about TODO seconds.
+
+<Example><![CDATA[
+gap> LoadPackage("ProgressBar");;
+gap> SetDisplayOptionsOfProgressBar(rec(printTotalTime := true));;
+gap> doLoop(5000, 1000);;
+gap> ResetDisplayOptionsOfProgressBar();;
+]]></Example>
+
+</Section>
+
+
+<!--===========================================================================
+||||  Example : Nested Loop                                                ||||
+============================================================================-->
+
+
+<Section Label="Intro Nested Loop Example">
+<Heading>Example: Nested Loop</Heading>
+
+The package also supports displaying nested loops.
+For this we need to specify the parent-child relationships of the individual processes.
+We also adjust the display to show the total execution time of the root process.
+<Example><![CDATA[
+gap> LoadPackage("ProgressBar");;
+gap> doNestedLoop := function(n, nSleep, m, mSleep)
+>      local i, j;
+>      for i in ProcessIterator([1 .. n], "1") do
+>        MicroSleep(nSleep);
+>        for j in ProcessIterator([1 .. m], "2", "1") do
+>          MicroSleep(mSleep);
+>        od;
+>      od;
+>    end;;
+gap> SetDisplayOptionsOfProgressBar(rec(printTotalTime := true));
+gap> doNestedLoop(3, 10^6/2, 50, 10^4);
+
+]]></Example>
+
+An example output might look like this
+<Example><![CDATA[
+
 ]]></Example>
 
 </Section>
@@ -104,19 +120,18 @@ All these outputs are visible in the same line of the terminal for roughly 1 sec
 <Heading>Example: Process with Steps</Heading>
 
 Apart from displaying loops, the package can be used to display the progress during the execution of a function as well.
-We disable the display of eta (expected time of arrival/completion), since it is meaningless in this context.
 <Example><![CDATA[
 gap> LoadPackage("ProgressBar");;
 gap> doSteps := function()
 >      local proc, opts;
->      opts := rec(printETA := false);
->      proc := StartProcess(3, fail, "Process", "Doing Step 1", opts);;
+>      proc := SetProcess(3);;
+>      UpdateProcess(proc, rec(header := "Doing Step 1"));
 >      Sleep(2);
->      UpdateProcess(proc, "Doing Step 2", opts);
+>      UpdateProcess(proc, rec(header := "Doing Step 2"));
 >      Sleep(4);
->      UpdateProcess(proc, "Doing Step 3", opts);
+>      UpdateProcess(proc, rec(header := "Doing Step 3"));
 >      Sleep(2);
->      UpdateProcess(proc, "Finished", opts);
+>      UpdateProcess(proc, rec(header := "Finished"));
 >    end;;
 gap> doSteps();
  | Finished
@@ -140,47 +155,6 @@ each displayed in the same lines of the screen.
 
 
 <!--===========================================================================
-||||  Example : Nested Loop                                                ||||
-============================================================================-->
-
-
-<Section Label="Intro Nested Loop Example">
-<Heading>Example: Nested Loop</Heading>
-
-The package also supports displaying nested loops.
-For this we need to specify the parent-child relationships of the individual processes.
-We also adjust the display to show the total execution time of the root process.
-<Example><![CDATA[
-gap> LoadPackage("ProgressBar");;
-gap> doNestedLoop := function(n, m)
->      local loop1, loop2, i, j;
->      SetDisplayOptionsForProgressBar(rec(printTotalTime := true));
->      loop1 := StartProcess(n, fail, "Outer Loop");;
->      for i in [1 .. n] do
->        loop2 := StartProcess(m, loop1, "Inner Loop");;
->        for j in [1 .. m] do
->          Sleep(1);
->          UpdateProcess(loop2);
->        od;
->        UpdateProcess(loop1);
->      od;
->    end;;
-gap> doNestedLoop(3, 5);
- | Total Time 0:00:17
- [===================================================] 100% | 3/3 | eta 0:00:00
-]]></Example>
-
-An example output might look like this
-<Example><![CDATA[
- | Total Time 0:00:07
- [=================----------------------------------]  33% | 1/3 | eta 0:00:11
-   [===================------------------------------]  40% | 2/5 | eta 0:00:03
-]]></Example>
-
-</Section>
-
-
-<!--===========================================================================
 ||||  Example : Tree                                                       ||||
 ============================================================================-->
 
@@ -189,59 +163,31 @@ An example output might look like this
 <Heading>Example: Tree</Heading>
 
 We can also display much more intertwined processes than nested loops.
-For this it is recommended to use <F>DeclareProcess</F>
-to define all parent-child relationships of the individual processes
-before the root process starts.
-We can then use <F>StartProcess</F> with the id or process record to start each process. <P/>
-
-Additionaly, we use some display options to disable removing a child process when it terminates,
-and to highlight the current process that is running.
+This package can handle any process tree. <P/>
 
 <Example><![CDATA[
 gap> LoadPackage("ProgressBar");;
-gap> doTree := function(n, l, m, r)
->      local root, left, leftInner, i, j, k;
->      SetDisplayOptionsForProgressBar(rec(
->        printTotalTime := true,
->        removeChildren := false,
->        highlightCurStep := true
->      ));
->      # Declare Process Tree
->      root := DeclareProcess(n, fail, "Root", "Root");;
->      left := DeclareProcess(l, root, "left", "Left");;
->      leftInner := DeclareProcess(m, "left", "leftInner", "Inner");;
->      DeclareProcess(r, root, "right", "Right");;
->      # Start Process
->      StartProcess(root);;
->      for i in [1 .. n] do
->        StartProcess(left);;
->        for j in [1 .. l] do
->          Sleep(1);
->          StartProcess(leftInner);;
->          for k in [1.. m] do
->            Sleep(1);
->            UpdateProcess(leftInner);
+gap> doTree := function(n, nSleep, l, lSleep, m, mSleep, r, rSleep)
+>      local i, j, k;
+>      for i in ProcessIterator([1 .. n], "Root", fail) do
+>        MicroSleep(nSleep);
+>        for j in ProcessIterator([1 .. l], "Left", "Root") do
+>          MicroSleep(lSleep);
+>          for k in ProcessIterator([1 .. m], "Inner", "Left") do
+>            MicroSleep(mSleep);
 >          od;
->          UpdateProcess(left);
 >        od;
->        StartProcess("right");;
->        for j in [1 .. r] do
->          Sleep(1);
->          UpdateProcess("right");
+>        for j in ProcessIterator([1 .. r], "Right", "Root") do
+>          MicroSleep(rSleep);
 >        od;
->        UpdateProcess(root);
 >      od;
 >    end;;
-gap> doTree(3, 5, 2, 4);
- | Total Time 0:01:06
- | Root
- [===================================================] 100% | 3/3 | eta 0:00:00
-    | Left
-    [------------------------------------------------]   0% | 0/5 | eta ?:??:??
-    |  | Inner
-    |  [---------------------------------------------]   0% | 0/2 | eta ?:??:??
-    | Right
-    [------------------------------------------------]   0% | 0/4 | eta ?:??:??
+gap> SetDisplayOptionsOfProgressBar(rec(
+>      printID := true,
+>      printTotalTime := true,
+>      highlightCurStep := true,
+>    ));;
+gap> doTree(3, 10^6/10, 5, 10^6/2, 4, 10^6/10, 12, 10^6/10);
 ]]></Example>
 
 Example output during the execution of the function:
@@ -257,9 +203,39 @@ Example output during the execution of the function:
     [====================================------------]  75% | 3/4 | eta 0:00:01
 ]]></Example>
 
+In the above example we create the processes on the fly,
+so for example the <Q>Right</Q> process appears in the terminal only after we create this process for the first time.
+When this happens, the layout of the display changes slightly, because the total number of iterations for <Q>Right</Q> has 2 digits,
+whereas for each of the ones before that it had 1 digit.
+If we want to see all processes from the beginning, we need to set the processes before the most outer loop starts.
+<Example><![CDATA[
+gap> LoadPackage("ProgressBar");;
+gap> doTree := function(n, nSleep, l, lSleep, m, mSleep, r, rSleep)
+>      local iter, i, j, k;
+>      iter := ProcessIterator([1 .. n], "Root", fail);
+>      SetProcess(l, "Left", "Root");
+>      SetProcess(m, "Inner", "Left");
+>      SetProcess(r, "Right", "Root");
+>      for i in iter do
+>        MicroSleep(nSleep);
+>        for j in ProcessIterator([1 .. l], "Left", "Root") do
+>          MicroSleep(lSleep);
+>          for k in ProcessIterator([1 .. m], "Inner", "Left") do
+>            MicroSleep(mSleep);
+>          od;
+>        od;
+>        for j in ProcessIterator([1 .. r], "Right", "Root") do
+>          MicroSleep(rSleep);
+>        od;
+>      od;
+>    end;;
+gap> doTree(3, 10^6/10, 5, 10^6/2, 4, 10^6/10, 12, 10^6/10);
+]]></Example>
 </Section>
+
 
 <!--===========================================================================
 ============================================================================-->
+
 
 </Chapter>

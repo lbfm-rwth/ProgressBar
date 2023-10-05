@@ -9,7 +9,7 @@ The GAP package ProgressBar displays the progression of a process in the termina
 ## Demonstration : Loop
 
 A demonstration of the simplest use case of the package,
-namely displaying the process of a loop.
+namely displaying the progression of a loop.
 
 ![](https://github.com/lbfm-rwth/ProgressBar/blob/main/gif/loop_light.gif#gh-light-mode-only)![](https://github.com/lbfm-rwth/ProgressBar/blob/main/gif/loop_dark.gif#gh-dark-mode-only)
 
@@ -21,7 +21,7 @@ A demonstration of displaying the progress inside a function.
 
 ## Demonstration : Tree
 
-A demonstration of displaying a progress tree
+A demonstration of displaying a process tree
 
 ![](https://github.com/lbfm-rwth/ProgressBar/blob/main/gif/tree_light.gif#gh-light-mode-only)![](https://github.com/lbfm-rwth/ProgressBar/blob/main/gif/tree_dark.gif#gh-dark-mode-only)
 
