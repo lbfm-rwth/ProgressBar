@@ -68,9 +68,9 @@ for a computation that would otherwise only take about TODO seconds.
 
 <Example><![CDATA[
 gap> LoadPackage("ProgressBar");;
-gap> SetDisplayOptionsOfProgressBar(rec(printTotalTime := true));;
+gap> SetDisplayOptionsOfProgressPrinter(rec(printTotalTime := true));;
 gap> doLoop(5000, 1000);;
-gap> ResetDisplayOptionsOfProgressBar();;
+gap> ResetDisplayOptionsOfProgressPrinter();;
 ]]></Example>
 
 </Section>
@@ -98,7 +98,7 @@ gap> doNestedLoop := function(n, nSleep, m, mSleep)
 >        od;
 >      od;
 >    end;;
-gap> SetDisplayOptionsOfProgressBar(rec(printTotalTime := true));
+gap> SetDisplayOptionsOfProgressPrinter(rec(printTotalTime := true));
 gap> doNestedLoop(3, 10^6/2, 50, 10^4);
 
 ]]></Example>
@@ -182,7 +182,7 @@ gap> doTree := function(n, nSleep, l, lSleep, m, mSleep, r, rSleep)
 >        od;
 >      od;
 >    end;;
-gap> SetDisplayOptionsOfProgressBar(rec(
+gap> SetDisplayOptionsOfProgressPrinter(rec(
 >      printID := true,
 >      printTotalTime := true,
 >      highlightCurStep := true,

@@ -30,19 +30,19 @@
 #############################################################################
 
 
-## <#GAPDoc Label="DisplayOptionsOfProgressBar">
+## <#GAPDoc Label="DisplayOptionsOfProgressPrinter">
 ## <ManSection>
-## <Func Name="DisplayOptionsOfProgressBar" Arg=""/>
+## <Func Name="DisplayOptionsOfProgressPrinter" Arg=""/>
 ## <Description>
 ##   Prints the current global display options for progress bar.
 ## </Description>
 ## </ManSection>
 ## <#/GAPDoc>
-DeclareGlobalFunction( "DisplayOptionsOfProgressBar" );
+DeclareGlobalFunction( "DisplayOptionsOfProgressPrinter" );
 
-## <#GAPDoc Label="SetDisplayOptionsOfProgressBar">
+## <#GAPDoc Label="SetDisplayOptionsOfProgressPrinter">
 ## <ManSection>
-## <Func Name="SetDisplayOptionsOfProgressBar" Arg="optrec"/>
+## <Func Name="SetDisplayOptionsOfProgressPrinter" Arg="optrec"/>
 ## <Description>
 ##   Sets the current global display options for progress bar. <P/>
 ##   The argument <A>optrec</A> must be a record with components that are valid display options, see Section <Ref Sect="Display Functions"/>.
@@ -50,17 +50,17 @@ DeclareGlobalFunction( "DisplayOptionsOfProgressBar" );
 ## </Description>
 ## </ManSection>
 ## <#/GAPDoc>
-DeclareGlobalFunction( "SetDisplayOptionsOfProgressBar" );
+DeclareGlobalFunction( "SetDisplayOptionsOfProgressPrinter" );
 
-## <#GAPDoc Label="ResetDisplayOptionsOfProgressBar">
+## <#GAPDoc Label="ResetDisplayOptionsOfProgressPrinter">
 ## <ManSection>
-## <Func Name="ResetDisplayOptionsOfProgressBar" Arg=""/>
+## <Func Name="ResetDisplayOptionsOfProgressPrinter" Arg=""/>
 ## <Description>
 ##   Resets the current global display options for progress bar to default.
 ## </Description>
 ## </ManSection>
 ## <#/GAPDoc>
-DeclareGlobalFunction( "ResetDisplayOptionsOfProgressBar" );
+DeclareGlobalFunction( "ResetDisplayOptionsOfProgressPrinter" );
 
 
 #############################################################################
@@ -205,6 +205,8 @@ DeclareGlobalFunction( "StartProcess" );
 ## <#/GAPDoc>
 DeclareGlobalFunction( "EndProcess" );
 
+DeclareGlobalFunction( "PB_PrintProgress" );
+
 
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
@@ -213,6 +215,12 @@ DeclareGlobalFunction( "EndProcess" );
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
+
+
+DeclareGlobalName( "PB_IndentPrinter" );
+DeclareGlobalName( "PB_ProgressBarPrinter" );
+DeclareGlobalName( "PB_ProgressRatioPrinter" );
+DeclareGlobalName( "PB_TextPrinter" );
 
 
 #############################################################################
