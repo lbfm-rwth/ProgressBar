@@ -48,6 +48,7 @@ BindGlobal("PB_DisplayOptionsDefault", Immutable(rec(
 	bar_symbol_full := "=",
 	bar_symbol_empty := "-",
 	bar_suffix := "]",
+	inf := "oo",
 )));
 
 # Current options, mutable entries
@@ -118,6 +119,7 @@ PB_Global.ProgressPrinter.Layout := rec(
 					bar_suffix := PB_DisplayOptions.bar_suffix,
 					bar_symbol_empty := PB_DisplayOptions.bar_symbol_empty,
 					bar_symbol_full := PB_DisplayOptions.bar_symbol_full,
+					dt := 500,
 				),
 			),
 			rec(
@@ -136,7 +138,9 @@ PB_Global.ProgressPrinter.Layout := rec(
 				),
 				isActive := ReturnTrue,
 				printer := PB_ProgressRatioPrinter,
-				printer_options := rec(),
+				printer_options := rec(
+					inf := PB_DisplayOptions.inf,
+				),
 			)
 			]
 		)
