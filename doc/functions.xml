@@ -75,7 +75,7 @@ This package displays the progress of exactly one main process, which we call th
 <Heading>Display Options</Heading>
 
 The default process printer can be modified via the global display options,
-see <Ref Func="SetDisplayOptionsOfProgressBar"/>. <P/>
+see <Ref Func="SetDisplayOptionsOfProgressPrinter"/>. <P/>
 
 The following components of <A>optrec</A> are supported.
 
@@ -131,11 +131,11 @@ See <Ref Label="Color and Style"/> for available styles. <P/>
 
 </List>
 
-<#Include Label="DisplayOptionsOfProgressBar">
+<#Include Label="DisplayOptionsOfProgressPrinter">
 
-<#Include Label="SetDisplayOptionsOfProgressBar">
+<#Include Label="SetDisplayOptionsOfProgressPrinter">
 
-<#Include Label="ResetDisplayOptionsOfProgressBar">
+<#Include Label="ResetDisplayOptionsOfProgressPrinter">
 
 
 <!--===========================================================================

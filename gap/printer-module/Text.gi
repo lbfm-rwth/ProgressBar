@@ -1,7 +1,7 @@
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
-##  init.g
+##  Text.gi
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
@@ -20,4 +20,23 @@
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
 
-ReadPackage( "ProgressBar", "gap/ProgressBar.gd");
+
+BindGlobal("PB_TextPrinter", rec());
+
+PB_TextPrinter.dimensions := function(process, options)
+	return rec(
+		w := Length(options.text),
+		h := 1
+	);
+end;
+
+PB_TextPrinter.generate := function(process, id, options)
+	local block;
+	block := process.blocks.(id);
+	PB_MoveCursorToCoordinate(block.x, block.y);
+	PB_Print(options.text);
+end;
+
+PB_TextPrinter.refresh := function(process, id, options)
+	return PB_State.Success;
+end;

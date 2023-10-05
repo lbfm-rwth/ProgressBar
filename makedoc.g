@@ -1,8 +1,26 @@
-#
-# ProgressBar: The GAP package ProgressBar displays the progression of a process in the terminal.
-#
-# This file is a script which compiles the package manual.
-#
+#############################################################################
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+##                                                                         ##
+##  makedoc.g
+##                                                                         ##
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+#############################################################################
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+##                                                                         ##
+##
+##  This file is part of the ProgressBar package.
+##
+##  This file's authors include Friedrich Rober.
+##
+##  Please refer to the COPYRIGHT file for details.
+##
+##  SPDX-License-Identifier: GPL-2.0-or-later
+##
+##                                                                         ##
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+#############################################################################
+
+
 if fail = LoadPackage("AutoDoc", "2018.02.14") then
     Error("AutoDoc version 2018.02.14 or newer is required.");
 fi;
@@ -24,11 +42,13 @@ Append(GAPDoc2HTMLProcs.Head2, Concatenation([
     "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n"
 ]));
 
-AutoDoc( rec( scaffold := rec(
+AutoDoc(rec(
+    scaffold := rec(
         includes := [
             "intro.xml",
             "functions.xml",
             "developer.xml"
             ],
         ),
-        autodoc := true ) );
+    autodoc := true )
+);

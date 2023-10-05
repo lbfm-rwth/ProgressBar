@@ -245,7 +245,7 @@ and <C>param</C> a parameter of a block, i.e. either <C>"x"</C>, <C>"y"</C>, <C>
 
 </List>
 
-The active progress printer is <C>PB_Global.Printer</C>.
+The active progress printer is <C>PB_Global.ProgressPrinter</C>.
 
 </Section>
 
