@@ -37,7 +37,7 @@ and provides an intuitive and clean visualization of a progress.
 In the first example we show the simplest use case of the package,
 namely displaying the progression of a loop. <P/>
 
-For this we simply wrap an iterator into the function <C>ProcessIterator</C>.
+For this we simply wrap a list into the function <C>ProcessIterator</C>.
 
 <Example><![CDATA[
 gap> LoadPackage("ProgressBar");;
@@ -72,6 +72,53 @@ gap> SetDisplayOptionsOfProgressPrinter(rec(printTotalTime := true));;
 gap> doLoop(5000, 1000);;
 gap> ResetDisplayOptionsOfProgressPrinter();;
 ]]></Example>
+
+</Section>
+
+
+<!--===========================================================================
+||||  Example : Indefinite Loop                                            ||||
+============================================================================-->
+
+
+<Section Label="Intro Indefinite Loop Example">
+<Heading>Example: Indefinite Loop</Heading>
+
+We can also display the progression of an indefinite loop. <P/>
+
+For this we simply wrap an iterator into the function <C>ProcessIterator</C>.
+
+<Example><![CDATA[
+gap> LoadPackage("ProgressBar");;
+gap> doLoop := function(n, nSleep)
+>      local i;
+>      for i in ProcessIterator(IteratorOfCombinations([1 .. n])) do
+>        MicroSleep(nSleep);
+>      od;
+>    end;;
+gap> doLoop(8, 10^4);
+]]></Example>
+
+Sometimes we can actually compute the number of steps needed
+for the process to terminate beforehand.
+This will change the display and provide more detailed information
+about the progress.
+
+<Example><![CDATA[
+gap> LoadPackage("ProgressBar");;
+gap> doLoop := function(n, nSleep)
+>      local iter, i;
+>      iter := ProcessIterator(rec(
+         iter := IteratorOfCombinations([1 .. n]),
+         nrSteps := 2^n
+       ));
+>      for i in iter do
+>        MicroSleep(nSleep);
+>      od;
+>    end;;
+gap> doLoop(8, 10^4);
+]]></Example>
+
 
 </Section>
 

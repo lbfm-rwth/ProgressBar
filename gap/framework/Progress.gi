@@ -30,6 +30,17 @@
 #############################################################################
 
 
+BindGlobal("PB_ResetBounds", function(process)
+	local id, block;
+	for id in RecNames(process.blocks) do
+		block := process.blocks.(id);
+		block.x := fail;
+		block.y := fail;
+		block.w := fail;
+		block.h := fail;
+	od;
+end);
+
 # get bounding box of block
 BindGlobal("PB_GetBounds", function(process, pattern)
 	local bounds;
@@ -222,7 +233,7 @@ end);
 BindGlobal("PB_AllocateBlocks", function(process)
 	local pattern, bounds, param, data, configuration, state, procs, proc, M, b, values;
 	# initalize process pattern
-	process.blocks := rec();
+	PB_ResetBounds(process);
 	pattern := PB_Global.ProgressPrinter.Layout;
 	bounds := PB_GetBounds(process, pattern);
 	bounds.x := 1;
@@ -330,6 +341,7 @@ BindGlobal("PB_PrintProcess", function(process, doGenerate)
 	if PB_PrintBlock(process, PB_Global.ProgressPrinter.Layout, doGenerate) = PB_State.Failure then
 		# refresh had a failure, i.e. information doesn't fit the block anymore.
 		state := PB_CombineStates(state, PB_AllocateBlocks(process));
+		PB_ClearProcess(process);
 		PB_PrintBlock(process, PB_Global.ProgressPrinter.Layout, true);
 	fi;
 
@@ -368,13 +380,14 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 	od;
 
 	if state = PB_State.Desyncronized then
+		PB_ClearScreen();
 		PB_Perform(root, function(proc)
 			PB_PrintProcess(proc, true);
 		end);
 	fi;
 
 	# Did root process terminate?
-	if process = root and process.curStep = process.nrSteps then
+	if process = root and process.terminated then
 		PB_MoveCursorToLine(PB_Global.Terminal.usedLines);
 		PB_PrintNewLine();
 		PB_ResetStyleAndColor();

@@ -181,6 +181,7 @@ InstallGlobalFunction("ProcessIterator", function(args...)
 		local isDone;
 		isDone := IsDoneIterator(procIter!.iter);
 		if isDone then
+			procIter!.process.terminated := true;
 			UpdateProcess(procIter!.process);
 		fi;
 		return isDone;
@@ -267,6 +268,7 @@ InstallGlobalFunction("SetProcess", function(args...)
 		timeStamp := fail,
 		curStep := -1,
 		nrSteps := nrSteps,
+		terminated := false,
 		content := content,
 		blocks := rec(),
 	);
@@ -294,9 +296,10 @@ InstallGlobalFunction("ResetProcess", function(procObj)
 	local process;
 	process := PB_GetProcess(procObj);
 	PB_Perform(process, function(proc)
-		process.totalTime := 0;
-		process.timeStamp := fail;
-		process.curStep := -1;
+		proc.totalTime := 0;
+		proc.timeStamp := fail;
+		proc.curStep := -1;
+		proc.terminated := false;
 	end);
 end);
 
@@ -328,13 +331,17 @@ InstallGlobalFunction("UpdateProcess", function(args...)
 
 	# increment step
 	process.curStep := process.curStep + 1;
+	if process.curStep = process.nrSteps then
+		process.terminated := true;
+	fi;
 	# TODO: deal with this case in a nicer way
 	if process.curStep > process.nrSteps then
 		process.nrSteps := infinity;
+		process.terminated := false;
 	fi;
 
 	# reset children if necessary
-	if process.curStep < process.nrSteps then
+	if not process.terminated then
 		for child in process.children do
 			ResetProcess(child);
 		od;
