@@ -15,7 +15,9 @@
 <Chapter Label="Functions">
 <Heading>Functions</Heading>
 
-Here we include a list of all functions that are provided to the user.<P/>
+Here we include a list of all functions that are provided to the <E>user</E>. <P/>
+
+See Chapter <Ref Chap="Intro"/> for extensive examples on how to use these functions. <P/>
 
 
 <!--===========================================================================
@@ -26,6 +28,10 @@ Here we include a list of all functions that are provided to the user.<P/>
 <Heading>Terminology</Heading>
 
 Abstractly speaking, a <E>process</E> is a series of actions or steps taken in order to achieve a particular end. <P/>
+
+We refer to steps by their position in the series.
+For technical reasons, we add an artificial step <M>0</M> at the beginning of the series.
+Step <M>0</M> is completed when the process starts. <P/>
 
 A step might be broken down into smaller steps, and thus we can think of a step as a (sub-)process.
 In this case, we call the larger process the <E>parent (process)</E> and the nested (sub-)process the <E>child (process)</E>.
@@ -53,13 +59,21 @@ This package displays the progress of exactly one main process, which we call th
 <Section Label="Process Functions">
 <Heading>Process Functions</Heading>
 
+Here we include a list of all functions related to creating and modifying a process. <P/>
+
 <#Include Label="ProcessIterator">
 
 <#Include Label="SetProcess">
 
+<#Include Label="RefreshProcess">
+
 <#Include Label="UpdateProcess">
 
-<#Include Label="RefreshProcess">
+<#Include Label="StartProcess">
+
+<#Include Label="StopProcess">
+
+<#Include Label="TerminateProcess">
 
 <#Include Label="ResetProcess">
 
@@ -67,75 +81,22 @@ This package displays the progress of exactly one main process, which we call th
 
 
 <!--===========================================================================
-||||  Display Options                                                      ||||
+||||  Display                                                              ||||
 ============================================================================-->
 
 
 <Section Label="Display Functions">
-<Heading>Display Options</Heading>
+<Heading>Display</Heading>
 
-The default process printer can be modified via the global display options,
-see <Ref Func="SetDisplayOptionsOfProgressPrinter"/>. <P/>
+Here we include a list of all functions related to the display.<P/>
 
-The following components of <A>optrec</A> are supported.
+<#Include Label="SetLayout">
 
-<List>
+<#Include Label="LayoutOptions">
 
-<Mark><C>printID</C></Mark>
-<Item>
-<K>true</K> to print id of process in the header. <P/>
-<K>false</K> to suppress id printing. <E><M>\leftarrow</M> DEFAULT</E> <P/>
-</Item>
+<#Include Label="SetLayoutOptions">
 
-<Mark><C>printTotalTime</C></Mark>
-<Item>
-<K>true</K> to print total time. <P/>
-<K>false</K> to suppress total time. <E><M>\leftarrow</M> DEFAULT</E> <P/>
-</Item>
-
-<Mark><C>printTotalTimeOnlyForRoot</C></Mark>
-<Item>
-<K>true</K> to print total time only in the header of the root, if enabled. <E><M>\leftarrow</M> DEFAULT</E> <P/>
-<K>false</K> to print total time for each process, if enabled. <P/>
-</Item>
-
-<Mark><C>printETA</C></Mark>
-<Item>
-<K>true</K> to print eta (expected time of arrival/completion). <P/>
-<K>false</K> to suppress eta. <E><M>\leftarrow</M> DEFAULT</E> <P/>
-</Item>
-
-<Mark><C>printETAOnlyForRoot</C></Mark>
-<Item>
-<K>true</K> to print eta only in the header of the root, if enabled. <E><M>\leftarrow</M> DEFAULT</E> <P/>
-<K>false</K> to print eta for each process, if enabled. <P/>
-</Item>
-
-<Mark><C>highlightCurStep</C></Mark>
-<Item>
-<K>true</K> to highlight current process. <P/>
-<K>false</K> to suppress highlighting. <E><M>\leftarrow</M> DEFAULT</E> <P/>
-</Item>
-
-<Mark><C>highlightColor</C></Mark>
-<Item>
-<K>"red"</K> <E><M>\leftarrow</M> DEFAULT</E> <P/>
-See <Ref Label="Color and Style"/> for available colors. <P/>
-</Item>
-
-<Mark><C>highlightStyle</C></Mark>
-<Item>
-<K>"default"</K> <E><M>\leftarrow</M> DEFAULT</E> <P/>
-See <Ref Label="Color and Style"/> for available styles. <P/>
-</Item>
-
-</List>
-
-<#Include Label="DisplayOptionsOfProgressPrinter">
-
-<#Include Label="SetDisplayOptionsOfProgressPrinter">
-
-<#Include Label="ResetDisplayOptionsOfProgressPrinter">
+<#Include Label="ResetLayoutOptions">
 
 
 <!--===========================================================================
@@ -146,7 +107,7 @@ See <Ref Label="Color and Style"/> for available styles. <P/>
 <Subsection Label="Color and Style">
 <Heading>Color And Style</Heading>
 
-Some display options allow to set a color or a style. The available colors and styles are listed below.
+Some layout options allow to set a color or a style. The available colors and styles are listed below.
 
 <List>
 <Mark><C>Color</C></Mark>

@@ -24,125 +24,6 @@
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
-## Helper Functions : Manipulating Process Tree
-##                                                                         ##
-##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
-#############################################################################
-
-
-InstallGlobalFunction("PB_First", function(process, func)
-	local child, res;
-	if func(process) then
-		return process;
-	fi;
-	for child in process.children do
-		res := PB_First(child, func);
-		if res <> fail then
-			return res;
-		fi;
-	od;
-	return fail;
-end);
-
-InstallGlobalFunction("PB_Reduce", function(process, func, init)
-	local value, child;
-	value := func(init, process);
-	for child in process.children do
-		value := PB_Reduce(child, func, value);
-	od;
-	return value;
-end);
-
-InstallGlobalFunction("PB_Perform", function(process, func)
-	local child;
-	func(process);
-	for child in process.children do
-		PB_Perform(child, func);
-	od;
-end);
-
-BindGlobal("PB_AllProcesses", function()
-	local L;
-	L := [];
-	PB_Perform(PB_Global.Process, function(proc) Add(L, proc); end);
-	return L;
-end);
-
-# args: process[, mode]
-# mode in ["all", "upper", "lower"]
-BindGlobal("PB_Siblings", function(args...)
-	local process, mode, parent, pos, n, L;
-	process := args[1];
-	mode := "all";
-	if Length(args) > 1 then
-		mode := args[2];
-	fi;
-	parent := process.parent;
-	if parent = fail then
-		return [];
-	else
-		pos := PositionProperty(parent.children, child -> child.id = process.id);
-		n := Length(parent.children);
-		if mode = "all" then
-			L := [1 .. n];
-			Remove(L, pos);
-		elif mode = "upper" then
-			L := [1 .. pos - 1];
-		elif mode = "lower" then
-			L := [pos + 1 .. n];
-		else
-			Error("unknown mode");
-		fi;
-		return parent.children{L};
-	fi;
-end);
-
-InstallGlobalFunction("PB_ChildrenAndSelf", function(process)
-	local L, child;
-	L := [process];
-	for child in process.children do
-		Append(L, PB_ChildrenAndSelf(child));
-	od;
-	return L;
-end);
-
-BindGlobal("PB_Lower", function(process)
-	local L, child, sibling;
-	L := [];
-	for child in process.children do
-		Append(L, PB_ChildrenAndSelf(child));
-	od;
-	for sibling in PB_Siblings(process, "lower") do
-		Append(L, PB_ChildrenAndSelf(sibling));
-	od;
-	return L;
-end);
-
-InstallGlobalFunction("PB_UpperUntilCaller", function(process, caller, L)
-	local child;
-	if process.id = caller.id then
-		return true;
-	fi;
-	Add(L, process);
-	for child in process.children do
-		if PB_UpperUntilCaller(child, caller, L) then
-			return true;
-		fi;
-	od;
-	return false;
-end);
-
-BindGlobal("PB_Upper", function(process)
-	local L;
-	L := [];
-	PB_UpperUntilCaller(PB_Global.Process, process, L);
-	return L;
-end);
-
-
-#############################################################################
-##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
-##                                                                         ##
 ##  Iterator
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
@@ -150,26 +31,26 @@ end);
 
 
 InstallGlobalFunction("ProcessIterator", function(args...)
-	local iter, nrSteps, processArgs, process, processIter;
+	local iter, totalSteps, processArgs, process, processIter;
 	if IsListOrCollection(args[1]) then
 		iter := Iterator(args[1]);
-		nrSteps := Size(args[1]);
+		totalSteps := Size(args[1]);
 	elif IsIterator(args[1]) then
 		iter := args[1];
-		nrSteps := infinity;
+		totalSteps := infinity;
 	elif IsRecord(args[1]) then
-		if not (IsBound(args[1].iter) and IsBound(args[1].nrSteps)) then
-			Error("iterator-like object is given as record and therefore must contain the entries iter and nrSteps");
+		if not (IsBound(args[1].iter) and IsBound(args[1].totalSteps)) then
+			Error("iterator-like object is given as record and therefore must contain the entries iter and totalSteps");
 		fi;
 		iter := args[1].iter;
-		nrSteps := args[1].nrSteps;
+		totalSteps := args[1].totalSteps;
 		if not IsIterator(iter) then
 			Error("iter entry is not an iterator");
 		fi;
 	else
 		Error("Unknown type of iterator-like object");
 	fi;
-	processArgs := [nrSteps];
+	processArgs := [totalSteps];
 	Append(processArgs, args{[2 .. Length(args)]});
 	process := CallFuncList(SetProcess, processArgs);
 	processIter := rec(process := process, iter := iter);
@@ -181,7 +62,7 @@ InstallGlobalFunction("ProcessIterator", function(args...)
 		local isDone;
 		isDone := IsDoneIterator(procIter!.iter);
 		if isDone then
-			procIter!.process.terminated := true;
+			TerminateProcess(procIter!.process, false);
 			UpdateProcess(procIter!.process);
 		fi;
 		return isDone;
@@ -190,7 +71,7 @@ InstallGlobalFunction("ProcessIterator", function(args...)
 		return ProcessIterator(
 			rec(
 				iter := ShallowCopy(procIter!.iter),
-				nrSteps := procIter!.process.nrSteps
+				totalSteps := procIter!.process.totalSteps
 			),
 			procIter!.process.id,
 			procIter!.process.parent,
@@ -219,7 +100,7 @@ end);
 BindGlobal("PB_GetProcess", function(procObj)
 	local process;
 	if IsString(procObj) then
-		process := PB_First(PB_Global.Process, proc -> proc.id = procObj);
+		process := PB_First(ProgressPrinter.RootProcess, proc -> proc.id = procObj);
 		if process = fail then
 			Error("Cannot find process");
 		fi;
@@ -232,12 +113,12 @@ BindGlobal("PB_GetProcess", function(procObj)
 end);
 
 InstallGlobalFunction("SetProcess", function(args...)
-	local nrSteps, id, parent, content, process, child, pos;
+	local totalSteps, id, parent, content, process, child, pos;
 
 	# process arguments
-	nrSteps := args[1];
-	if not (IsPosInt(nrSteps) or IsInfinity(nrSteps)) then
-		Error("nrSteps is not a positive integer or infinity");
+	totalSteps := args[1];
+	if not (IsPosInt(totalSteps) or IsInfinity(totalSteps)) then
+		Error("totalSteps is not a positive integer or infinity");
 	fi;
 	if Length(args) >= 2 then
 		id := args[2];
@@ -245,7 +126,7 @@ InstallGlobalFunction("SetProcess", function(args...)
 			Error("id must be a string");
 		fi;
 	else
-		id := List([1 .. 100], i -> PseudoRandom(PB_Global.Alphabet));
+		id := List([1 .. 16], i -> PseudoRandom("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"));
 	fi;
 	if Length(args) >= 3 then
 		parent := PB_GetProcess(args[3]);
@@ -265,17 +146,16 @@ InstallGlobalFunction("SetProcess", function(args...)
 		children := [],
 		depth := 0,
 		totalTime := 0,
-		timeStamp := fail,
-		curStep := -1,
-		nrSteps := nrSteps,
-		terminated := false,
+		completedSteps := -1,
+		totalSteps := totalSteps,
+		status := "inactive",
 		content := content,
 		blocks := rec(),
 	);
 
 	# add process to tree
 	if parent = fail then
-		PB_Global.Process := process;
+		PB_StartProgressPrinter(process);
 	else
 		pos := PositionProperty(parent.children, proc -> proc.id = id);
 		if pos = fail then
@@ -283,8 +163,8 @@ InstallGlobalFunction("SetProcess", function(args...)
 			Add(parent.children, process);
 		else
 			process := parent.children[pos];
-			ResetProcess(process);
-			process.nrSteps := nrSteps;
+			ResetProcess(process, false);
+			process.totalSteps := totalSteps;
 			process.content := content;
 		fi;
 	fi;
@@ -292,15 +172,26 @@ InstallGlobalFunction("SetProcess", function(args...)
 	return process;
 end);
 
-InstallGlobalFunction("ResetProcess", function(procObj)
-	local process;
-	process := PB_GetProcess(procObj);
+InstallGlobalFunction("ResetProcess", function(args...)
+	local process, doRefresh;
+
+	# arguments
+	process := PB_GetProcess(args[1]);
+	if Length(args) >= 2 then
+		doRefresh := args[2];
+	else
+		doRefresh := true;
+	fi;
+
 	PB_Perform(process, function(proc)
 		proc.totalTime := 0;
-		proc.timeStamp := fail;
-		proc.curStep := -1;
-		proc.terminated := false;
+		proc.completedSteps := -1;
+		proc.status := "inactive";
 	end);
+
+	if doRefresh then
+		RefreshProcess(process);
+	fi;
 end);
 
 
@@ -313,8 +204,45 @@ end);
 #############################################################################
 
 
+# returns time in milliseconds after 1.1.1970, 0:00 GMT
+BindGlobal("PB_TimeStamp", function()
+	local r;
+	r := IO_gettimeofday(); # time in microseconds
+	return r.tv_sec * 1000 + Int(r.tv_usec * 0.001);
+end);
+
+InstallGlobalFunction("RefreshProcess", function(procObj)
+	local process, t, dt;
+
+	# arguments
+	process := PB_GetProcess(procObj);
+
+	# update timers
+	t := PB_TimeStamp();
+	if ProgressPrinter.TimeStamp <> fail then
+		dt := t - ProgressPrinter.TimeStamp;
+		PB_Perform(ProgressPrinter.RootProcess, function(proc)
+			if proc.status = "active" then
+				proc.totalTime := proc.totalTime + dt;
+			elif proc.status = "stopped" then
+				proc.totalTime := proc.totalTime + dt;
+				proc.status := "inactive";
+			elif proc.status = "started" then
+				proc.status := "active";
+			elif proc.status = "terminated" then
+				proc.totalTime := proc.totalTime + dt;
+				proc.status := "complete";
+			fi;
+		end);
+	fi;
+	ProgressPrinter.TimeStamp := t;
+
+	# print
+	PB_PrintProgress(process);
+end);
+
 InstallGlobalFunction("UpdateProcess", function(args...)
-	local process, content, r, child;
+	local process, content, doRefresh, r, child;
 
 	# arguments
 	process := PB_GetProcess(args[1]);
@@ -323,6 +251,11 @@ InstallGlobalFunction("UpdateProcess", function(args...)
 	else
 		content := rec();
 	fi;
+	if Length(args) >= 3 then
+		doRefresh := args[3];
+	else
+		doRefresh := true;
+	fi;
 
 	# update content
 	for r in RecNames(content) do
@@ -330,40 +263,61 @@ InstallGlobalFunction("UpdateProcess", function(args...)
 	od;
 
 	# increment step
-	process.curStep := process.curStep + 1;
-	if process.curStep = process.nrSteps then
-		process.terminated := true;
-	fi;
-	# TODO: deal with this case in a nicer way
-	if process.curStep > process.nrSteps then
-		process.nrSteps := infinity;
-		process.terminated := false;
+	process.completedSteps := process.completedSteps + 1;
+	if process.completedSteps = 0 then
+		StartProcess(process, false);
+	elif process.completedSteps = process.totalSteps then
+		TerminateProcess(process, false);
+	elif process.completedSteps > process.totalSteps then
+		process.totalSteps := infinity;
+		process.blocks := rec();
+		StartProcess(process, false);
 	fi;
 
 	# reset children if necessary
-	if not process.terminated then
+	if not process.status in ["terminated", "complete"] then
 		for child in process.children do
-			ResetProcess(child);
+			ResetProcess(child, false);
 		od;
 	fi;
 
-	RefreshProcess(process);
+	if doRefresh then
+		RefreshProcess(process);
+	fi;
 end);
 
-InstallGlobalFunction("RefreshProcess", function(procObj)
-	local process, t, dt, child;
+BindGlobal("PB_SetStatus", function(fromStatus, toStatus, args)
+	local process, doRefresh;
 
 	# arguments
-	process := PB_GetProcess(procObj);
-
-	# set timers
-	t := PB_TimeStamp();
-	if process.timeStamp <> fail then
-		dt := t - process.timeStamp;
-		process.totalTime := process.totalTime + dt;
+	process := PB_GetProcess(args[1]);
+	if Length(args) >= 2 then
+		doRefresh := args[2];
+	else
+		doRefresh := true;
 	fi;
-	process.timeStamp := t;
 
-	# print
-	PB_PrintProgress(process);
+	PB_Perform(process, function(proc)
+		if proc.status = fromStatus then
+			proc.status := toStatus;
+		fi;
+	end);
+
+	if doRefresh then
+		RefreshProcess(process);
+	fi;
+end);
+
+InstallGlobalFunction("StopProcess", function(args...)
+	PB_SetStatus("active", "stopped", args);
+end);
+
+InstallGlobalFunction("StartProcess", function(args...)
+	PB_SetStatus("complete", "started", [args[1], false]);
+	PB_SetStatus("inactive", "started", args);
+end);
+
+InstallGlobalFunction("TerminateProcess", function(args...)
+	PB_SetStatus("inactive", "complete", [args[1], false]);
+	PB_SetStatus("active", "terminated", args);
 end);

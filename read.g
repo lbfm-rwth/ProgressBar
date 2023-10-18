@@ -24,19 +24,13 @@
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
-## Framework
+## Utils
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
 
 
-ReadPackage( "ProgressBar", "gap/framework/Global.gi");
-
-ReadPackage( "ProgressBar", "gap/framework/Terminal.gi");
-
-ReadPackage( "ProgressBar", "gap/framework/Process.gi");
-
-ReadPackage( "ProgressBar", "gap/framework/Progress.gi");
+ReadPackage( "ProgressBar", "gap/Utils.gi");
 
 
 #############################################################################
@@ -48,22 +42,35 @@ ReadPackage( "ProgressBar", "gap/framework/Progress.gi");
 #############################################################################
 
 
+ReadPackage( "ProgressBar", "gap/printer-module/Header.gi");
 ReadPackage( "ProgressBar", "gap/printer-module/Indent.gi");
-
 ReadPackage( "ProgressBar", "gap/printer-module/ProgressBar.gi");
-
 ReadPackage( "ProgressBar", "gap/printer-module/ProgressRatio.gi");
-
 ReadPackage( "ProgressBar", "gap/printer-module/Text.gi");
+ReadPackage( "ProgressBar", "gap/printer-module/TotalTime.gi");
 
 
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
-## Progress Printer
+## Layouts
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
 
 
-ReadPackage( "ProgressBar", "gap/ProgressPrinter.gi");
+ReadPackage( "ProgressBar", "gap/layout/Standard.gi");
+
+
+#############################################################################
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+##                                                                         ##
+## Framework
+##                                                                         ##
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+#############################################################################
+
+
+ReadPackage( "ProgressBar", "gap/framework/Terminal.gi");
+ReadPackage( "ProgressBar", "gap/framework/Process.gi");
+ReadPackage( "ProgressBar", "gap/framework/ProgressPrinter.gi");

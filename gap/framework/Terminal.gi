@@ -23,41 +23,28 @@
 
 # ANSI Escape Sequences: https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
 
-BindGlobal("PB_ResetTerminal", function()
-	PB_Global.Terminal := rec(
-		cursorVerticalPos := 1,
-		cursorHorizontalPos := 1,
-		usedLines := 1,
-		screenWidth := SizeScreen()[1] - 1,
-	);
-end);
-
-BindGlobal("PB_Print", function(msg)
+InstallGlobalFunction("PB_Print", function(msg)
 	local pos;
-	pos := PB_Global.Terminal.cursorHorizontalPos + Length(msg);
-	# TODO: FIXME: deal with this without an error
-	if pos > PB_Global.Terminal.screenWidth + 1 then
-		Error("Trying to print more than the screen width allows to");
+	pos := ProgressPrinter.Cursor.x + Length(msg);
+	if pos > ProgressPrinter.Bounds.w + 1 then
+		# Error("Trying to print more than the screen width allows to");
+		return;
 	fi;
 	WriteAll(STDOut, msg);
-	PB_Global.Terminal.cursorHorizontalPos := pos;
+	ProgressPrinter.Cursor.x := pos;
 end);
 
-BindGlobal("PB_PrintNewLine", function(args...)
-	local n;
-	n := 1;
-	if Length(args) = 1 then
-		n := args[1];
-	fi;
-	WriteAll(STDOut, Concatenation(ListWithIdenticalEntries(n, "\n"))); # create n new lines
-	PB_Global.Terminal.cursorVerticalPos := PB_Global.Terminal.cursorVerticalPos + n;
+InstallGlobalFunction("PB_SetStyleAndColor", function(r)
+	PB_SetStyle(r.style);
+	PB_SetForegroundColor(r.foregroundColor);
+	PB_SetBackgroundColor(r.backgroundColor);
 end);
 
-BindGlobal("PB_ResetStyleAndColor", function()
+InstallGlobalFunction("PB_ResetStyleAndColor", function()
 	WriteAll(STDOut, "\033[0m");
 end);
 
-BindGlobal("PB_SetStyle", function(mode)
+InstallGlobalFunction("PB_SetStyle", function(mode)
 	if mode = "default" then
 		WriteAll(STDOut, "\033[22m\033[23m\033[24m\033[25m");
 	elif mode = "bold" then
@@ -73,7 +60,7 @@ BindGlobal("PB_SetStyle", function(mode)
 	fi;
 end);
 
-BindGlobal("PB_SetForegroundColor", function(color)
+InstallGlobalFunction("PB_SetForegroundColor", function(color)
 	if color = "default" then
 		WriteAll(STDOut, "\033[39m");
 	elif color = "black" then
@@ -95,7 +82,7 @@ BindGlobal("PB_SetForegroundColor", function(color)
 	fi;
 end);
 
-BindGlobal("PB_SetBackgroundColor", function(color)
+InstallGlobalFunction("PB_SetBackgroundColor", function(color)
 	if color = "default" then
 		WriteAll(STDOut, "\033[49m");
 	elif color = "black" then
@@ -117,38 +104,43 @@ BindGlobal("PB_SetBackgroundColor", function(color)
 	fi;
 end);
 
-BindGlobal("PB_HideCursor", function()
+InstallGlobalFunction("PB_HideCursor", function()
 	WriteAll(STDOut, "\033[?25l"); # hide cursor
 end);
 
-BindGlobal("PB_ShowCursor", function()
+InstallGlobalFunction("PB_ShowCursor", function()
 	WriteAll(STDOut, "\033[?25h"); # show cursor
 end);
 
-BindGlobal("PB_MoveCursorDown", function(move)
-	local n;
+InstallGlobalFunction("PB_MoveCursorDown", function(move)
+	local n, m, x;
 	move := AbsInt(move);
-	n := PB_Global.Terminal.cursorVerticalPos + move;
-	if PB_Global.Terminal.usedLines < n then
-		move := PB_Global.Terminal.usedLines - PB_Global.Terminal.cursorVerticalPos;
+	n := ProgressPrinter.Cursor.y + move;
+	if ProgressPrinter.Bounds.h < n then
+		move := ProgressPrinter.Bounds.h - ProgressPrinter.Cursor.y;
 		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # move cursor down X lines
-		PB_PrintNewLine(n - PB_Global.Terminal.usedLines);
-		PB_Global.Terminal.usedLines := n;
+		m := n - ProgressPrinter.Bounds.h;
+		x := ProgressPrinter.Cursor.x;
+		PB_MoveCursorToStartOfLine();
+		WriteAll(STDOut, Concatenation(ListWithIdenticalEntries(m, "\n"))); # create X new lines and move cursor to start of last line
+		PB_RefreshLine();
+		ProgressPrinter.Bounds.h := n;
+		PB_MoveCursorToChar(x);
 	else
 		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # move cursor down X lines
-		PB_Global.Terminal.cursorVerticalPos := PB_Global.Terminal.cursorVerticalPos + move;
 	fi;
+	ProgressPrinter.Cursor.y := n;
 end);
 
-BindGlobal("PB_MoveCursorUp", function(move)
+InstallGlobalFunction("PB_MoveCursorUp", function(move)
 	move := AbsInt(move);
 	WriteAll(STDOut, Concatenation("\033[", String(move), "A")); # move cursor up X lines
-	PB_Global.Terminal.cursorVerticalPos := PB_Global.Terminal.cursorVerticalPos - move;
+	ProgressPrinter.Cursor.y := ProgressPrinter.Cursor.y - move;
 end);
 
-BindGlobal("PB_MoveCursorToLine", function(n)
+InstallGlobalFunction("PB_MoveCursorToLine", function(n)
 	local move;
-	move := n - PB_Global.Terminal.cursorVerticalPos;
+	move := n - ProgressPrinter.Cursor.y;
 	if move > 0 then
 		PB_MoveCursorDown(move);
 	elif move < 0 then
@@ -156,21 +148,21 @@ BindGlobal("PB_MoveCursorToLine", function(n)
 	fi;
 end);
 
-BindGlobal("PB_MoveCursorRight", function(move)
+InstallGlobalFunction("PB_MoveCursorRight", function(move)
 	move := AbsInt(move);
 	WriteAll(STDOut, Concatenation("\033[", String(move), "C")); # move cursor right X characters
-	PB_Global.Terminal.cursorHorizontalPos := PB_Global.Terminal.cursorHorizontalPos + move;
+	ProgressPrinter.Cursor.x := ProgressPrinter.Cursor.x + move;
 end);
 
-BindGlobal("PB_MoveCursorLeft", function(move)
+InstallGlobalFunction("PB_MoveCursorLeft", function(move)
 	move := AbsInt(move);
 	WriteAll(STDOut, Concatenation("\033[", String(move), "D")); # move cursor left X characters
-	PB_Global.Terminal.cursorHorizontalPos := PB_Global.Terminal.cursorHorizontalPos - move;
+	ProgressPrinter.Cursor.x := ProgressPrinter.Cursor.x - move;
 end);
 
-BindGlobal("PB_MoveCursorToChar", function(n)
+InstallGlobalFunction("PB_MoveCursorToChar", function(n)
 	local move;
-	move := n - PB_Global.Terminal.cursorHorizontalPos;
+	move := n - ProgressPrinter.Cursor.x;
 	if move > 0 then
 		PB_MoveCursorRight(move);
 	elif move < 0 then
@@ -178,47 +170,45 @@ BindGlobal("PB_MoveCursorToChar", function(n)
 	fi;
 end);
 
-BindGlobal("PB_MoveCursorToCoordinate", function(x, y)
+InstallGlobalFunction("PB_MoveCursorToCoordinate", function(x, y)
 	PB_MoveCursorToChar(x);
 	PB_MoveCursorToLine(y);
 end);
 
-BindGlobal("PB_MoveCursorToStartOfLine", function()
-	WriteAll(STDOut, "\r"); # move cursor to the start of the line
-	PB_Global.Terminal.cursorHorizontalPos := 1;
+InstallGlobalFunction("PB_MoveCursorToProcessEnd", function()
+	PB_MoveCursorToCoordinate(1, 1 + PB_Reduce(
+		ProgressPrinter.RootProcess,
+		{value, proc} -> value + proc.blocks.(ProgressPrinter.Pattern.id).h, 0
+	));
 end);
 
-BindGlobal("PB_ClearLine", function()
+InstallGlobalFunction("PB_MoveCursorToStartOfLine", function()
+	WriteAll(STDOut, "\r"); # move cursor to the start of the line
+	ProgressPrinter.Cursor.x := 1;
+end);
+
+InstallGlobalFunction("PB_ClearLine", function()
 	WriteAll(STDOut, "\033[2K"); # erase the entire line
 end);
 
-BindGlobal("PB_RefreshLine", function()
+InstallGlobalFunction("PB_RefreshLine", function()
 	PB_MoveCursorToStartOfLine();
 	PB_ClearLine();
 end);
 
-BindGlobal("PB_ClearScreen", function()
-	PB_MoveCursorToLine(PB_Global.Terminal.usedLines);
+InstallGlobalFunction("PB_ClearScreen", function()
+	PB_MoveCursorToLine(ProgressPrinter.Bounds.h);
 	PB_RefreshLine();
-	while PB_Global.Terminal.cursorVerticalPos > 1 do
+	while ProgressPrinter.Cursor.y > 1 do
 		PB_MoveCursorUp(1);
 		PB_ClearLine();
 	od;
 end);
 
-BindGlobal("PB_ClearBlock", function(block)
-	local empty, j;
-	empty := Concatenation(ListWithIdenticalEntries(block.w, " "));
-	for j in [1 .. block.h] do
-		PB_MoveCursorToCoordinate(block.x, block.y + j - 1);
-		PB_Print(empty);
-	od;
-end);
-
-BindGlobal("PB_ClearProcess", function(process)
+InstallGlobalFunction("PB_ClearProcess", function(process)
 	local block, j;
 	if IsBound(process.blocks) then
-		block := process.blocks.(PB_Global.ProgressPrinter.Layout.id);
+		block := process.blocks.(ProgressPrinter.Pattern.id);
 		PB_MoveCursorToLine(block.y);
 		PB_RefreshLine();
 		for j in [2 .. block.h] do
@@ -226,4 +216,13 @@ BindGlobal("PB_ClearProcess", function(process)
 			PB_ClearLine();
 		od;
 	fi;
+end);
+
+InstallGlobalFunction("PB_ClearBlock", function(block)
+	local empty, j;
+	empty := Concatenation(ListWithIdenticalEntries(block.w, " "));
+	for j in [1 .. block.h] do
+		PB_MoveCursorToCoordinate(block.x, block.y + j - 1);
+		PB_Print(empty);
+	od;
 end);

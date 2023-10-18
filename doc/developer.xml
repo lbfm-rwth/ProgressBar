@@ -1,5 +1,5 @@
 <!--===========================================================================
-||||  Deveoloper                                                           ||||
+||||  Developer                                                            ||||
 ===============================================================================
 ||||  This file is part of the ProgressBar package.
 ||||
@@ -15,7 +15,7 @@
 <Chapter Label="Progress Printer">
 <Heading>Progress Printer</Heading>
 
-Here we include a guide how to modify the progress printer.
+Here we include a guide how to modify the progress printing.
 This chapter is intended for <E>advanced users</E> or <E>developers</E> of the package.<P/>
 
 The <E>progress printer</E> is a framework
@@ -71,7 +71,7 @@ whereas increasing the <C>y</C>-coordinate as movement to the bottom.
 <Heading>Block</Heading>
 
 A <E>block</E> is a virtually allocated space in the terminal (see Section <Ref Sect="Terminal"/>)
-in form of a rectangle, a record given by entries <C>(x, y, w, h)</C>,
+in form of a rectangle, a record <C>rec(x, y, w, h)</C>,
 where the top left corner of the interior is the cell at the coordinate <C>(x, y)</C>,
 the width is given by <C>w</C> and the height by <C>h</C>,
 i.e. the bottom right corner of the interior is the cell at the coordinate <C>(x + w - 1, y + h - 1)</C>. <P/>
@@ -80,31 +80,106 @@ For example we would see something akin to the following
 if we fill the inside of the block <C>(x := 3, y := 2, w := 5, h := 2)</C>
 with the symbols <Q><K>O</K></Q> and use a simple dot <Q><K>.</K></Q> for the outside:<P/>
 
-<Example><![CDATA[
+<Log><![CDATA[
 ..........
 ..OOOOO...
 ..OOOOO...
 ..........
 ..........
-]]></Example>
+]]></Log>
 
-Two blocks must either be disjoint or nested into one another,
-in which case we call the larger block the <E>parent</E>
-and the smaller block the <E>child</E>.
-Thus the collection of all blocks naturally form a forest by their parent-child relation, i.e. a set of independent trees.
-The trees are in one-to-one-correspondence with the nodes of the <E>process tree</E>.<P/>
+</Section>
 
-We call a root of such a tree a <E>process block</E>.
-We require that the width of a process block spans the whole terminal screen
-and that they are stacked from top to bottom following the natural ordering of the process tree given by DFS (depth-first search). <P/>
 
-We call an inner node a <E>composition block</E>.
+<!--===========================================================================
+||||  Pattern                                                              ||||
+============================================================================-->
+
+
+<Section Label="Pattern">
+<Heading>Pattern</Heading>
+
+The main purpose of a <E>pattern</E>
+is to encode a coherent display of the progress.
+We use patterns to create blocks in a structured and uniform manner
+of which a few special ones are defining bounds for printer modules.
+The progress printer has a <E>pattern tree</E> whose nodes are patterns,
+records that contain the following entries: <P/>
+
+<List>
+<Mark>id</Mark>
+<Item>
+Unique identifier string of the pattern.
+</Item>
+
+<Mark>parent</Mark>
+<Item>
+A pattern or <C>fail</C>.
+</Item>
+
+<Mark>children</Mark>
+<Item>
+List of patterns.
+</Item>
+
+<Mark>isActive</Mark>
+<Item>
+A function that takes as input a process and returns whether the branch starting in this pattern is active.
+</Item>
+
+<Mark>alignment</Mark>
+<Item>
+<K>"horizontal"</K> all blocks created from children of this pattern are aligned horizontally,
+i.e. they have equal <C>y</C>-coordinates and heights. <P/>
+<K>"vertical"</K> all blocks created from children of this pattern are aligned vertically,
+i.e. they have equal <C>x</C>-coordinates and widths.
+</Item>
+
+<Mark>sync</Mark>
+<Item>
+<K>["dim", ...]</K> all blocks created from this pattern have equal values for the dimension <A>dim</A>, etc.
+</Item>
+
+</List>
+
+If a pattern is a leaf node, it must additionally contain the following entries: <P/>
+
+<List>
+
+<Mark>printer</Mark>
+<Item>
+A printer module.
+</Item>
+
+<Mark>printer_options</Mark>
+<Item>
+An options record for the printer.
+</Item>
+
+</List>
+
+<Subsection>
+<Heading>Creating Blocks</Heading>
+
+For each process we create blocks from the pattern tree using a recursive strategy:
+If the pattern is active for the given process (<C>pattern.isActive(process) = True</C>),
+we create a block with the given id (stored in <C>process.blocks.id</C>)
+and apply the same strategy for all children of the pattern. <P/>
+
+A block created from the root of the pattern tree is called a <E>process block</E>.
+The width of a process block spans the whole terminal screen.
+Furthermore we require that the process blocks are stacked from top to bottom
+following the natural ordering of the process tree given by DFS (depth-first search). <P/>
+
+A block created from an inner node of the pattern tree is called a <E>composition block</E>.
 The interior of such a block must be the disjoint union of the interior of its children,
 and either the children are aligned horizontally within the block, or vertically.
 Visually speaking, we split a composition block into smaller blocks by either using only vertical or horizontal cuts. <P/>
 
-We call a leaf node a <E>printer block</E>.
+A block created from a leaf node of the pattern tree is called a <E>printer block</E>.
 This block corresponds to a printer module that is capable of displaying a specific information about the current state of a process inside the block bounds. (See <Ref Sect="Printer Module"/>) <P/>
+
+</Subsection>
 
 </Section>
 
@@ -113,52 +188,36 @@ This block corresponds to a printer module that is capable of displaying a speci
 ||||  Layout                                                               ||||
 ============================================================================-->
 
-
 <Section Label="Layout">
-<Heading>Layout and Pattern</Heading>
+<Heading>Layout</Heading>
 
-The <E>layout</E> for the printing of all processes is encoded via a single tree.
-We call a node of this tree a <E>pattern</E>, a record whose entries depend on whether it is an inner or a leaf node:
+The <E>layout</E> is a record containing the following entries:
+
 <List>
 
-<Mark>Any Node</Mark>
+<Mark>Setup</Mark>
 <Item>
-<K>id:</K> unique identifier string <P/>
-<K>layout_options:</K> local layout options record overriding the default <P/>
-<K>isActive:</K> a function that takes as input a process and returns whether the branch starting in this pattern is active
-</Item>
-
-<Mark>Inner Node</Mark>
+A function that setups
+the following entries
+of the progress printer
+using the current options
+in <C>ProgressPrinter.Options</C>:
+<List>
 <Item>
-<K>children:</K> a list of patterns <P/>
+<C>ProgressPrinter.Pattern</C>
 </Item>
-
-<Mark>Leaf Node</Mark>
 <Item>
-<K>printer:</K> a printer module <P/>
-<K>printer_options:</K> options record for the printer <P/>
+<C>ProgressPrinter.InitialConfiguration</C>
 </Item>
-
+<Item>
+<C>ProgressPrinter.StyleAndColor</C>
+</Item>
 </List>
-
-For each process we create blocks from the layout using a recursive strategy:
-If the pattern is active for the given process (<C>pattern.isActive(process) = True</C>),
-we create a block with the given id (stored in <C>process.blocks.id</C>)
-and apply the same strategy for all children of the pattern. <P/>
-
-The parameters of the blocks are determined using the restrictions employed by the <E>layout options</E>, a record with following entries:
-<List>
-
-<Mark>Alignment</Mark>
-<Item>
-<K>"horizontal"</K> all blocks created from children of this pattern have equal <C>y</C>-coordinates and heights <E><M>\leftarrow</M> DEFAULT</E> <P/>
-<K>"vertical"</K>   all blocks created from children of this pattern have equal <C>x</C>-coordinates and widths
 </Item>
 
-<Mark>Sync</Mark>
+<Mark>DefaultOptions</Mark>
 <Item>
-<K>[]</K> no syncronization of dimensions among blocks created from this pattern <E><M>\leftarrow</M> DEFAULT</E> <P/>
-<K>["dim", ...]</K> all blocks created from this pattern have equal values for the dimension <A>dim</A>, etc.
+The default options record for <C>Setup</C>.
 </Item>
 
 </List>
@@ -178,11 +237,12 @@ A <E>printer module</E> is responsible for displaying a specific information abo
 e.g. the number of completed iterations or the total runtime.
 Technically, it is a record that must contain the following functions as entries
 where the argument <A>options</A> must be valid printer options for this module.
+For a description of all available printer modules, see Chapter <Ref Sect="Modules"/>. <P/>
 
 <ManSection>
 <Func Name="dimensions" Arg="process, options"/>
 <Description>
-Returns a dimensions record with entries <C>(w, h)</C> where the dimensions are positive integers or <C>fail</C>. <P/>
+Returns a dimensions record <C>rec(w, h)</C> where the dimensions are positive integers or <C>fail</C>. <P/>
 If the values are integers, they specify the smallest dimensions of a block that is capable to display the information about the current state of this process. <P/>
 A value <C>fail</C> indicates that the dimension is unspecified and can be replaced by any arbitrary positive integer. <P/>
 </Description>
@@ -198,12 +258,12 @@ Therefore the printer usually needs to write characters for most of the interior
 </ManSection>
 
 <ManSection>
-<Func Name="refresh" Arg="process, id, options"/>
+<Func Name="update" Arg="process, id, options"/>
 <Description>
 Displays the information of this process in the block with identifier <A>id</A>
 under the assumption that <C>generate</C> was called beforehand and the block bounds haven't changed since then. <P/>
-Therefore the printer usually just updates a few characters in the terminal.  <P/>
-Returns either <C>Failure</C> or <C>Success</C> depending on whether it is capable to display the information in the block. <P/>
+Therefore the printer usually just updates a few characters in the terminal. <P/>
+Returns <C>true</C> if it is capable to display the information in the block, otherwise <C>false</C>. <P/>
 </Description>
 </ManSection>
 
@@ -211,31 +271,51 @@ Returns either <C>Failure</C> or <C>Success</C> depending on whether it is capab
 
 
 <!--===========================================================================
-||||  Framework                                                            ||||
+||||  Implementation                                                       ||||
 ============================================================================-->
 
 
-<Section Label="Framework">
-<Heading>Framework</Heading>
+<Section Label="Implementation">
+<Heading>Implementation</Heading>
 
-A <E>progress printer</E>, as described in the introduction of this chapter,
-is a record that must contain the following entries:
+The <E>progress printer</E>, as described in the introduction of this chapter,
+is implemented as a record that eventually contains the following entries:
 
 <List>
 
-<Mark>LayoutOptionsDefault</Mark>
+<Mark>Process</Mark>
 <Item>
-The default layout options of a pattern.
+The process tree containing the main process as the root.
+</Item>
+
+<Mark>Bounds</Mark>
+<Item>
+A record <C>rec(w, h)</C> encoding the virtual bounds in the terminal.
+</Item>
+
+<Mark>Cursor</Mark>
+<Item>
+A record <C>rec(x, y)</C> encoding the cursor position.
+</Item>
+
+<Mark>Options</Mark>
+<Item>
+The current options record for <C>Layout.Setup</C>.
 </Item>
 
 <Mark>Layout</Mark>
 <Item>
+A record <C>rec(Setup, DefaultOptions)</C> for setting up a layout.
+</Item>
+
+<Mark>Pattern</Mark>
+<Item>
 The tree consisting of patterns.
 </Item>
 
-<Mark>InitialConfigurationRecord</Mark>
+<Mark>InitialConfiguration</Mark>
 <Item>
-A configuration record is a list containing entries describing linear equations.
+A configuration is a list containing entries describing linear equations.
 These describe additional relations between the blocks created from the patterns of the layout. <P/>
 An entry is of the form <C>[ factor, rec(id, param), ..., a ]</C>
 which is interpreted as <C>factor * id.param + ... = a</C>.
@@ -243,9 +323,12 @@ Here, <C>factor</C> and <C>a</C> must be integers, <C>id</C> the identifier of a
 and <C>param</C> a parameter of a block, i.e. either <C>"x"</C>, <C>"y"</C>, <C>"w"</C> or <C>"h"</C>.
 </Item>
 
-</List>
+<Mark>StyleAndColor</Mark>
+<Item>
+A function that takes as input a process, and returns a record <C>rec(style, foregroundColor, backgroundColor)</C>.
+</Item>
 
-The active progress printer is <C>PB_Global.ProgressPrinter</C>.
+</List>
 
 </Section>
 
@@ -259,7 +342,7 @@ The active progress printer is <C>PB_Global.ProgressPrinter</C>.
 <Heading>Process</Heading>
 
 See Section <Ref Sect="Terminology"/> for the basic terminology.
-A abstract <E>process</E> is encoded via a <E>process record</E>,
+An abstract <E>process</E> is encoded via a <E>process record</E>,
 but we usually omit the distinction between them.
 The record has the following entries:
 
@@ -272,7 +355,7 @@ Unique identifier string of the process.
 
 <Mark>parent</Mark>
 <Item>
-A process record.
+A process record or <C>fail</C>.
 </Item>
 
 <Mark>children</Mark>
@@ -288,27 +371,95 @@ The root has <C>depth = 0</C>. Any other process has <C>depth = parent.depth + 1
 
 <Mark>totalTime</Mark>
 <Item>
-Total runtime of process after the most recent progression.
+Total runtime of process up to the most recent refresh.
 </Item>
 
-<Mark>curStep</Mark>
+<Mark>status</Mark>
 <Item>
-The most recent completed step of a process.
+The main intent is to mark for the <C>RefreshProcess</C> command
+how to update the total runtime of a process. <P/>
+
+A <E>permanent</E> status is one that can last after a refresh: <P/>
+<K>"active"</K>, <K>"inactive"</K>, <K>"complete"</K>.  <P/>
+
+A <E>temporary</E> status is one that transforms immediately into a new one after a refresh: <P/>
+<K>"started"</K>, <K>"stopped"</K>, <K>"terminated"</K>. <P/>
+
+Below is a flow chart showcasing how each status can be transformed into one another,
+given that <A>doRefresh</A> is true.
+Therefore we only deal with the commands
+<C>StartProcess</C>, <C>StopProcess</C> and <C>TerminateProcess</C>
+for a permanent status.
+We ommit the arrows for those commands that do not change the status.
+<!-- https://asciiflow.com/ -->
+<Verb><![CDATA[
+
+           +----------+
++--------> |          |      Refresh
+|          | inactive | <--------------+
++----------+          |                |
+  Refresh  +----+-----+                |
+                |                      |
+                | Start                |
+                |                      |
+                v                      |
+           +----------+                |
+           |          |                |
+           | started  |                |
+           |          |                |
+           +----+-----+                |
+                |                      |
+                | Refresh              |
+                |                      |
+                v                      |
+           +----------+          +-----+----+
++--------> |          |  Stop    |          |
+|          |  active  +--------> | stopped  |
++----------+          |          |          |
+  Refresh  +----+-----+          +----------+
+                |
+                | Terminate
+                |
+                v
+           +----------+
+           |          |
+           |terminated|
+           |          |
+           +----+-----+
+                |
+                | Refresh
+                |
+                v
+           +----------+
++--------> |          |
+|          | complete |
++----------+          |
+  Refresh  +----------+
+
+]]></Verb>
+
+We mention one edge case for completeness. If a process is defined via an iterator that doesn't complete after <C>totalSteps</C>,
+we change back from the <C>complete</C> status to the <C>active</C> status, and set <C>totalSteps := infinity</C> and <C>blocks := rec()</C>.
 </Item>
 
-<Mark>nrSteps</Mark>
+<Mark>completedSteps</Mark>
+<Item>
+The number of completed steps of a process. It is initialized with -1. This indicates that the process hasn't started yet.
+</Item>
+
+<Mark>totalSteps</Mark>
 <Item>
 Number of comleted steps for a process to be marked as terminated.
 </Item>
 
 <Mark>content</Mark>
 <Item>
-Extra content of the process that may be used by a progress printer or printer modules.
+Extra content of the process that may be used by the progress printer or printer modules.
 </Item>
 
 <Mark>blocks</Mark>
 <Item>
-A list of blocks, records that at least contain the entries <C>(x, y, w, h)</C>.
+A list of blocks, records of the form <C>rec(x, y, w, h)</C>.
 A printer block may be popullated with additional entries by the corresponding printer module.
 </Item>
 

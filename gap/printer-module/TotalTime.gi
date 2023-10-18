@@ -1,7 +1,7 @@
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
-##  Text.gi
+##  TotalTime.gi
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
@@ -21,22 +21,32 @@
 #############################################################################
 
 
-BindGlobal("PB_TextPrinter", rec());
+BindGlobal("PB_TotalTimeHeaderPrinter", rec());
 
-PB_TextPrinter.dimensions := function(process, options)
+PB_TotalTimeHeaderPrinter.dimensions := function(process, options)
 	return rec(
-		w := Length(options.text),
+		w := fail,
 		h := 1
 	);
 end;
 
-PB_TextPrinter.generate := function(process, id, options)
-	local block;
-	block := process.blocks.(id);
-	PB_MoveCursorToCoordinate(block.x, block.y);
-	PB_Print(options.text);
+PB_TotalTimeHeaderPrinter.setOptions := function(process, id, options)
+    local timeRec, timeStr;
+    timeRec := PB_TimeRecord(process.totalTime);
+    timeStr := "Total Time ~ ";
+    if timeRec.d > 0 then
+        timeStr := Concatenation(timeStr, String(timeRec.d), "day(s) and ");
+    fi;
+    timeStr := Concatenation(timeStr, PB_StrNum(timeRec.h, 2), ":", PB_StrNum(timeRec.min, 2), ":", PB_StrNum(timeRec.s, 2));
+	options.text := timeStr;
 end;
 
-PB_TextPrinter.update := function(process, id, options)
-	return true;
+PB_TotalTimeHeaderPrinter.generate := function(process, id, options)
+    PB_TotalTimeHeaderPrinter.setOptions(process, id, options);
+    PB_HeaderPrinter.generate(process, id, options);
+end;
+
+PB_TotalTimeHeaderPrinter.update := function(process, id, options)
+    PB_TotalTimeHeaderPrinter.setOptions(process, id, options);
+    return PB_HeaderPrinter.update(process, id, options);
 end;

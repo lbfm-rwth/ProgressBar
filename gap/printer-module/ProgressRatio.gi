@@ -25,10 +25,10 @@ BindGlobal("PB_ProgressRatioPrinter", rec());
 
 PB_ProgressRatioPrinter.dimensions := function(process, options)
 	local n;
-	if IsInfinity(process.nrSteps) then
-		n := Maximum(Length(options.inf), PB_NrDigits(Maximum(0, process.curStep)));
+	if IsInfinity(process.totalSteps) then
+		n := Maximum(Length(options.inf), PB_NrDigits(Maximum(0, process.completedSteps)));
 	else
-		n := PB_NrDigits(process.nrSteps);
+		n := PB_NrDigits(process.totalSteps);
 	fi;
 	return rec(
 		w := n * 2 + 1,
@@ -37,29 +37,29 @@ PB_ProgressRatioPrinter.dimensions := function(process, options)
 end;
 
 PB_ProgressRatioPrinter.generate := function(process, id, options)
-	local block, curStep;
+	local block, completedSteps;
 	block := process.blocks.(id);
 	block.nr_digits := (block.w - 1) / 2;
 	PB_MoveCursorToCoordinate(block.x, block.y);
-	curStep := Maximum(0, process.curStep);
-	PB_Print(String(curStep, block.nr_digits));
+	completedSteps := Maximum(0, process.completedSteps);
+	PB_Print(String(completedSteps, block.nr_digits));
 	PB_Print("/");
-	if IsInfinity(process.nrSteps) then
+	if IsInfinity(process.totalSteps) then
 		PB_Print(options.inf);
 	else
-		PB_Print(String(process.nrSteps, block.nr_digits));
+		PB_Print(String(process.totalSteps, block.nr_digits));
 	fi;
 end;
 
-PB_ProgressRatioPrinter.refresh := function(process, id, options)
-	local block, nr_digits, curStep;
+PB_ProgressRatioPrinter.update := function(process, id, options)
+	local block, nr_digits, completedSteps;
 	block := process.blocks.(id);
-	curStep := Maximum(0, process.curStep);
-	nr_digits := PB_NrDigits(curStep);
+	completedSteps := Maximum(0, process.completedSteps);
+	nr_digits := PB_NrDigits(completedSteps);
 	if nr_digits > block.nr_digits then
-		return PB_State.Failure;
+		return false;
 	fi;
 	PB_MoveCursorToCoordinate(block.x, block.y);
-	PB_Print(String(curStep, block.nr_digits));
-	return PB_State.Success;
+	PB_Print(String(completedSteps, block.nr_digits));
+	return true;
 end;

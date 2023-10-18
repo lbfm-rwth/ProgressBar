@@ -1,0 +1,48 @@
+<!--===========================================================================
+||||  Modules                                                              ||||
+===============================================================================
+||||  This file is part of the ProgressBar package.
+||||
+||||  This file's authors include Friedrich Rober.
+||||
+||||  Please refer to the COPYRIGHT file for details.
+||||
+||||  SPDX-License-Identifier: GPL-2.0-or-later
+===============================================================================
+============================================================================-->
+
+
+<Chapter Label="Modules">
+<Heading>Printer Modules</Heading>
+
+Here we include a list of all printer modules, see Section <Ref Sect="Printer Module"/> .<P/>
+
+
+<!--===========================================================================
+||||  Indent Printer                                                       ||||
+============================================================================-->
+
+
+<Section Label="Indent Printer">
+<Heading>Indent Printer</Heading>
+
+This printer module displays the parent-child relations between the processes
+in form of branches.
+
+<List>
+
+<Mark>branch</Mark>
+<Item>
+String used to print a branch.
+</Item>
+
+</List>
+
+</Section>
+
+
+<!--===========================================================================
+============================================================================-->
+
+
+</Chapter>
