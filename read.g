@@ -42,12 +42,13 @@ ReadPackage( "ProgressBar", "gap/Utils.gi");
 #############################################################################
 
 
-ReadPackage( "ProgressBar", "gap/printer-module/Header.gi");
-ReadPackage( "ProgressBar", "gap/printer-module/Indent.gi");
+ReadPackage( "ProgressBar", "gap/printer-module/DynamicMultiline.gi");
+ReadPackage( "ProgressBar", "gap/printer-module/TreeBranches.gi");
 ReadPackage( "ProgressBar", "gap/printer-module/ProgressBar.gi");
 ReadPackage( "ProgressBar", "gap/printer-module/ProgressRatio.gi");
-ReadPackage( "ProgressBar", "gap/printer-module/Text.gi");
+ReadPackage( "ProgressBar", "gap/printer-module/StaticInline.gi");
 ReadPackage( "ProgressBar", "gap/printer-module/TotalTime.gi");
+ReadPackage( "ProgressBar", "gap/printer-module/Highlight.gi");
 
 
 #############################################################################
@@ -59,6 +60,7 @@ ReadPackage( "ProgressBar", "gap/printer-module/TotalTime.gi");
 #############################################################################
 
 
+ReadPackage( "ProgressBar", "gap/layout/Tree.gi");
 ReadPackage( "ProgressBar", "gap/layout/Standard.gi");
 
 

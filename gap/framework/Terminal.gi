@@ -26,7 +26,7 @@
 InstallGlobalFunction("PB_Print", function(msg)
 	local pos;
 	pos := ProgressPrinter.Cursor.x + Length(msg);
-	if pos > ProgressPrinter.Bounds.w + 1 then
+	if pos > ProgressPrinter.Dimensions.w + 1 then
 		# Error("Trying to print more than the screen width allows to");
 		return;
 	fi;
@@ -116,15 +116,15 @@ InstallGlobalFunction("PB_MoveCursorDown", function(move)
 	local n, m, x;
 	move := AbsInt(move);
 	n := ProgressPrinter.Cursor.y + move;
-	if ProgressPrinter.Bounds.h < n then
-		move := ProgressPrinter.Bounds.h - ProgressPrinter.Cursor.y;
+	if ProgressPrinter.Dimensions.h < n then
+		move := ProgressPrinter.Dimensions.h - ProgressPrinter.Cursor.y;
 		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # move cursor down X lines
-		m := n - ProgressPrinter.Bounds.h;
+		m := n - ProgressPrinter.Dimensions.h;
 		x := ProgressPrinter.Cursor.x;
 		PB_MoveCursorToStartOfLine();
 		WriteAll(STDOut, Concatenation(ListWithIdenticalEntries(m, "\n"))); # create X new lines and move cursor to start of last line
 		PB_RefreshLine();
-		ProgressPrinter.Bounds.h := n;
+		ProgressPrinter.Dimensions.h := n;
 		PB_MoveCursorToChar(x);
 	else
 		WriteAll(STDOut, Concatenation("\033[", String(move), "B")); # move cursor down X lines
@@ -197,7 +197,7 @@ InstallGlobalFunction("PB_RefreshLine", function()
 end);
 
 InstallGlobalFunction("PB_ClearScreen", function()
-	PB_MoveCursorToLine(ProgressPrinter.Bounds.h);
+	PB_MoveCursorToLine(ProgressPrinter.Dimensions.h);
 	PB_RefreshLine();
 	while ProgressPrinter.Cursor.y > 1 do
 		PB_MoveCursorUp(1);

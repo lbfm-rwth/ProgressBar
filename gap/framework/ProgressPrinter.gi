@@ -33,15 +33,13 @@
 InstallValue(ProgressPrinter, rec(
 	Layout := fail,
 	RootProcess := fail,
-	Bounds := fail,
+	Dimensions := fail,
 	Cursor := fail,
 	Timestamp := fail,
 	Options := fail,
 	Pattern := fail,
 	InitialConfiguration := fail,
-	StyleAndColor := fail,
 	CurProcess := fail,
-	Status := fail,
 ));
 
 InstallGlobalFunction("SetLayout", function(layout)
@@ -51,9 +49,9 @@ end);
 
 SetLayout(StandardLayout);
 
-BindGlobal("PB_StartProgressPrinter", function(process)
+InstallGlobalFunction("PB_StartProgressPrinter", function(process)
 	ProgressPrinter.RootProcess := process;
-	ProgressPrinter.Bounds := rec(
+	ProgressPrinter.Dimensions := rec(
 		h := 1,
 		w := SizeScreen()[1] - 1,
 	);
@@ -62,7 +60,7 @@ BindGlobal("PB_StartProgressPrinter", function(process)
 		y := 1
 	);
 	ProgressPrinter.TimeStamp := fail;
-	ProgressPrinter.Layout.Setup();
+	ProgressPrinter.Layout.Setup(ProgressPrinter.Options);
 	ProgressPrinter.CurProcess := fail;
 end);
 
@@ -94,7 +92,7 @@ end);
 InstallGlobalFunction(SetLayoutOptions,
 function(options)
     PB_SetOptions(ProgressPrinter.Options, options);
-	ProgressPrinter.Layout.Setup();
+	ProgressPrinter.Layout.Setup(ProgressPrinter.Options);
 	if ProgressPrinter.RootProcess <> fail then
 		PB_Perform(ProgressPrinter.RootProcess, function(proc)
 			proc.blocks := rec();
@@ -173,7 +171,7 @@ end);
 
 # node sets dimensions of itself
 InstallGlobalFunction("PB_SetupDimensionsConfiguration", function(process, pattern)
-	local bounds, children, child, dim, dir, value, desyncronized;
+	local bounds, proc, children, child, dim, dir, value, desyncronized;
 	desyncronized := false;
 	# inner node
 	if not IsEmpty(pattern.children) then
@@ -186,8 +184,13 @@ InstallGlobalFunction("PB_SetupDimensionsConfiguration", function(process, patte
 		dim := pattern.printer.dimensions(process, pattern.printer_options);
 		bounds := PB_GetBounds(process, pattern);
 		for dir in ["w", "h"] do
-			if dir in pattern.sync and process <> ProgressPrinter.RootProcess then
-				value := ProgressPrinter.RootProcess.blocks.(pattern.id).(dir);
+			if dir in pattern.sync then
+				proc := PB_First(ProgressPrinter.RootProcess, proc -> proc <> process and IsBound(proc.blocks.(pattern.id)));
+				if proc <> fail then
+					value := proc.blocks.(pattern.id).(dir);
+				else
+					value := dim.(dir);
+				fi;
 				if value < dim.(dir) then
 					value := dim.(dir);
 					PB_Perform(ProgressPrinter.RootProcess, function(proc)
@@ -333,7 +336,7 @@ BindGlobal("PB_AllocateBlockBounds", function(process)
 	bounds := PB_GetBounds(process, pattern);
 	bounds.x := 1;
 	bounds.y := Sum(PB_Upper(process), upper -> upper.blocks.(pattern.id).h) + 1;
-	bounds.w := ProgressPrinter.Bounds.w;
+	bounds.w := ProgressPrinter.Dimensions.w;
 	for param in ["x", "y", "w"] do
 		Add(process.configuration, [1, rec(id := pattern.id, param := param), bounds.(param)]);
 	od;
@@ -445,16 +448,8 @@ InstallGlobalFunction("PB_PrintProgress", function(process)
 		PB_HideCursor();
 	fi;
 
-	# # Is current process different to last time?
-	# if ProgressPrinter.CurProcess <> fail and ProgressPrinter.CurProcess.id <> process.id then
-	# 	proc := ProgressPrinter.CurProcess;
-	# 	ProgressPrinter.CurProcess := process;
-	# 	PB_PrintProcess(proc, true);
-	# else
-	# 	ProgressPrinter.CurProcess := process;
-	# fi;
-
 	# Print current process
+	ProgressPrinter.CurProcess := process;
 	desyncronized := desyncronized or PB_PrintProcess(process, false);
 
 	# Print all descendants
