@@ -31,6 +31,7 @@
 
 
 DeclareGlobalVariable("ProgressPrinter");
+DeclareGlobalFunction( "PB_StartProgressPrinter" );
 
 # Printing
 DeclareGlobalFunction( "PB_PrintProgress" );
@@ -236,11 +237,12 @@ DeclareGlobalFunction( "TerminateProcess" );
 #############################################################################
 
 
-DeclareGlobalName( "PB_IndentPrinter" );
+DeclareGlobalName( "PB_HighlightPrinter" );
+DeclareGlobalName( "PB_TreeBranchesPrinter" );
 DeclareGlobalName( "PB_ProgressBarPrinter" );
 DeclareGlobalName( "PB_ProgressRatioPrinter" );
-DeclareGlobalName( "PB_TextPrinter" );
-DeclareGlobalName( "PB_HeaderPrinter" );
+DeclareGlobalName( "PB_StaticInlinePrinter" );
+DeclareGlobalName( "PB_DynamicMultilinePrinter" );
 DeclareGlobalName( "PB_TotalTimeHeaderPrinter" );
 
 
@@ -311,3 +313,16 @@ DeclareGlobalFunction( "PB_Siblings" );
 # Helpers
 DeclareGlobalFunction( "PB_ChildrenAndSelf" );
 DeclareGlobalFunction( "PB_UpperUntilCaller" );
+
+
+#############################################################################
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+##                                                                         ##
+##  Layout Helpers
+##                                                                         ##
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+#############################################################################
+
+DeclareGlobalFunction( "PB_IsRootProcess" );
+DeclareGlobalFunction( "PB_PrinterPattern" );
+

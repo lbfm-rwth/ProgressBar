@@ -19,12 +19,12 @@ Here we include a list of all printer modules, see Section <Ref Sect="Printer Mo
 
 
 <!--===========================================================================
-||||  Indent Printer                                                       ||||
+||||  TreeBranches Printer                                                       ||||
 ============================================================================-->
 
 
-<Section Label="Indent Printer">
-<Heading>Indent Printer</Heading>
+<Section Label="TreeBranches Printer">
+<Heading>TreeBranches Printer</Heading>
 
 This printer module displays the parent-child relations between the processes
 in form of branches.

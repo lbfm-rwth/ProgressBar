@@ -1,7 +1,7 @@
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
-##  Header.gi
+##  DynamicMultiline.gi
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
@@ -21,16 +21,16 @@
 #############################################################################
 
 
-BindGlobal("PB_HeaderPrinter", rec());
+BindGlobal("PB_DynamicMultilinePrinter", rec());
 
-PB_HeaderPrinter.dimensions := function(process, options)
+PB_DynamicMultilinePrinter.dimensions := function(process, options)
 	return rec(
 		w := fail,
 		h := fail
 	);
 end;
 
-PB_HeaderPrinter.generate := function(process, id, options)
+PB_DynamicMultilinePrinter.generate := function(process, id, options)
 	local block, chunks, buffer, char, word, j;
 	block := process.blocks.(id);
     chunks := [];
@@ -71,11 +71,11 @@ PB_HeaderPrinter.generate := function(process, id, options)
     block.text := options.text;
 end;
 
-PB_HeaderPrinter.update := function(process, id, options)
+PB_DynamicMultilinePrinter.update := function(process, id, options)
     local block;
     block := process.blocks.(id);
 	if block.text <> options.text then
-        PB_HeaderPrinter.generate(process, id, options);
+        PB_DynamicMultilinePrinter.generate(process, id, options);
     fi;
     return true;
 end;

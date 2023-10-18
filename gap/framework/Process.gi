@@ -271,6 +271,7 @@ InstallGlobalFunction("UpdateProcess", function(args...)
 	elif process.completedSteps > process.totalSteps then
 		process.totalSteps := infinity;
 		process.blocks := rec();
+		PB_HideCursor();
 		StartProcess(process, false);
 	fi;
 

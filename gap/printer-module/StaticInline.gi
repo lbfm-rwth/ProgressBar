@@ -1,7 +1,7 @@
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
-##  Text.gi
+##  StaticInline.gi
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
@@ -21,22 +21,22 @@
 #############################################################################
 
 
-BindGlobal("PB_TextPrinter", rec());
+BindGlobal("PB_StaticInlinePrinter", rec());
 
-PB_TextPrinter.dimensions := function(process, options)
+PB_StaticInlinePrinter.dimensions := function(process, options)
 	return rec(
 		w := Length(options.text),
 		h := 1
 	);
 end;
 
-PB_TextPrinter.generate := function(process, id, options)
+PB_StaticInlinePrinter.generate := function(process, id, options)
 	local block;
 	block := process.blocks.(id);
 	PB_MoveCursorToCoordinate(block.x, block.y);
 	PB_Print(options.text);
 end;
 
-PB_TextPrinter.update := function(process, id, options)
+PB_StaticInlinePrinter.update := function(process, id, options)
 	return true;
 end;

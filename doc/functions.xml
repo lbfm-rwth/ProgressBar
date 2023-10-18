@@ -134,7 +134,7 @@ Some layout options allow to set a color or a style. The available colors and st
 \textcolor{mycyan}{cyan},
 \textcolor{mywhite}{white}
 ]]>
-</Alt><Alt Only="Text">
+</Alt><Alt Only="StaticInline">
 black, red, green, yellow, blue, magenta, cyan, white
 </Alt>
 </Item>
@@ -161,7 +161,7 @@ black, red, green, yellow, blue, magenta, cyan, white
 \underline{underline},
 blinking
 ]]>
-</Alt><Alt Only="Text">
+</Alt><Alt Only="StaticInline">
 bold, dim, italic, underline, blinking
 </Alt>
 </Item>

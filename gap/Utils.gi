@@ -208,3 +208,61 @@ BindGlobal("PB_TimeRecord", function(t)
 	ms := quorem[2];
 	return rec(d := d, h := h, min := min, s := s, ms := ms);
 end);
+
+
+#############################################################################
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+##                                                                         ##
+## Layout Helpers
+##                                                                         ##
+##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
+#############################################################################
+
+
+InstallGlobalFunction("PB_IsRootProcess", function(process)
+	return process.id = ProgressPrinter.RootProcess.id;
+end);
+
+InstallGlobalFunction("PB_PrinterPattern", function(pattern, options, name)
+	local printer, printer_options;
+	if name = "bar" then
+		printer := PB_ProgressBarPrinter;
+		printer_options := rec(
+			prefix := options.bar_prefix,
+			symbol_full := options.bar_symbol_full,
+			symbol_empty := options.bar_symbol_empty,
+			suffix := options.bar_suffix,
+			dt := options.bar_indefinite_update_rate,
+			period_empty := options.bar_period_empty,
+			period_full := options.bar_period_full,
+		);
+	elif name = "time" then
+		printer := PB_TotalTimeHeaderPrinter;
+		printer_options := rec(
+			prefix := options.header_prefix,
+		);
+	elif name = "ratio" then
+		pattern.sync := ["w"];
+		printer := PB_ProgressRatioPrinter;
+		printer_options := rec(
+			inf := options.inf,
+		);
+	elif name = "sep" then
+		printer := PB_StaticInlinePrinter;
+		printer_options := rec(
+			text := options.separator,
+		);
+	fi;
+	if options.highlightCurStep and name in ["bar", "ratio", "sep"] then
+		pattern.printer := PB_HighlightPrinter;
+		pattern.printer_options := rec(
+			highlightColor := options.highlightColor,
+			highlightStyle := options.highlightStyle,
+			printer := printer,
+			printer_options := printer_options,
+		);
+	else
+		pattern.printer := printer;
+		pattern.printer_options := printer_options;
+	fi;
+end);

@@ -288,7 +288,7 @@ is implemented as a record that eventually contains the following entries:
 The process tree containing the main process as the root.
 </Item>
 
-<Mark>Bounds</Mark>
+<Mark>Dimensions</Mark>
 <Item>
 A record <C>rec(w, h)</C> encoding the virtual bounds in the terminal.
 </Item>

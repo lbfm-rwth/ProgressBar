@@ -43,10 +43,10 @@ end;
 
 PB_TotalTimeHeaderPrinter.generate := function(process, id, options)
     PB_TotalTimeHeaderPrinter.setOptions(process, id, options);
-    PB_HeaderPrinter.generate(process, id, options);
+    PB_DynamicMultilinePrinter.generate(process, id, options);
 end;
 
 PB_TotalTimeHeaderPrinter.update := function(process, id, options)
     PB_TotalTimeHeaderPrinter.setOptions(process, id, options);
-    return PB_HeaderPrinter.update(process, id, options);
+    return PB_DynamicMultilinePrinter.update(process, id, options);
 end;

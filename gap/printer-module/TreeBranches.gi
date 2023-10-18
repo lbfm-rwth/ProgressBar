@@ -1,7 +1,7 @@
 #############################################################################
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 ##                                                                         ##
-##  Indent.gi
+##  TreeBranches.gi
 ##                                                                         ##
 ##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
 #############################################################################
@@ -21,16 +21,16 @@
 #############################################################################
 
 
-BindGlobal("PB_IndentPrinter", rec());
+BindGlobal("PB_TreeBranchesPrinter", rec());
 
-PB_IndentPrinter.dimensions := function(process, options)
+PB_TreeBranchesPrinter.dimensions := function(process, options)
 	return rec(
 		w := Length(options.branch) * process.depth,
 		h := fail
 	);
 end;
 
-PB_IndentPrinter.print := function(process, id, options)
+PB_TreeBranchesPrinter.print := function(process, id, options)
 	local block, indent, i, j;
 	block := process.blocks.(id);
 	indent := Concatenation(ListWithIdenticalEntries(Length(options.branch), " "));
@@ -45,7 +45,7 @@ PB_IndentPrinter.print := function(process, id, options)
 	od;
 end;
 
-PB_IndentPrinter.generate := function(process, id, options)
+PB_TreeBranchesPrinter.generate := function(process, id, options)
 	local block, parent, child, grandchild, branch;
 	block := process.blocks.(id);
 	block.branches := [];
@@ -65,7 +65,7 @@ PB_IndentPrinter.generate := function(process, id, options)
 		for grandchild in child.children do
 			PB_Perform(grandchild, function(proc)
 				AddSet(proc.blocks.(id).branches, process.depth);
-				PB_IndentPrinter.print(proc, id, options);
+				PB_TreeBranchesPrinter.print(proc, id, options);
 			end);
 		od;
 	od;
@@ -79,9 +79,9 @@ PB_IndentPrinter.generate := function(process, id, options)
 			AddSet(block.branches, parent.depth);
 		fi;
 	fi;
-	PB_IndentPrinter.print(process, id, options);
+	PB_TreeBranchesPrinter.print(process, id, options);
 end;
 
-PB_IndentPrinter.update := function(process, id, options)
+PB_TreeBranchesPrinter.update := function(process, id, options)
 	return true;
 end;
