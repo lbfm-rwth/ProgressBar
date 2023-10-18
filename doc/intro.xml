@@ -63,9 +63,13 @@ for a computation that would otherwise only take about <M>5</M> seconds.
 
 <Log><![CDATA[
 gap> LoadPackage("ProgressBar");;
-gap> SetLayoutOptions(rec(printTotalTime := true));;
+gap> doLoop := function(n, nSleep)
+>      local i;
+>      for i in ProcessIterator([1 .. n]) do
+>        MicroSleep(nSleep);
+>      od;
+>    end;;
 gap> doLoop(5000, 1000);
-gap> ResetLayoutOptions();;
 ]]></Log>
 
 </Section>
@@ -161,9 +165,7 @@ gap> doNestedLoop := function(n, nSleep, m, mSleep)
 >        od;
 >      od;
 >    end;;
-gap> SetLayoutOptions(rec(printTotalTime := true));
 gap> doNestedLoop(3, 10^6/2, 50, 10^4);;
-gap> ResetLayoutOptions();;
 
 ]]></Log>
 
@@ -205,8 +207,6 @@ gap> doTree := function(n, nSleep, l, lSleep, m, mSleep, r, rSleep)
 >    end;;
 gap> SetLayoutOptions(rec(
 >      printID := true,
->      printTotalTime := true,
->      highlightCurStep := true,
 >    ));;
 gap> doTree(3, 10^6/10, 5, 10^6/2, 4, 10^6/10, 12, 10^6/10);;
 gap> ResetLayoutOptions();;
@@ -256,8 +256,6 @@ gap> doTree := function(n, nSleep, l, lSleep, m, mSleep, r, rSleep)
 >    end;;
 gap> SetLayoutOptions(rec(
 >      printID := true,
->      printTotalTime := true,
->      highlightCurStep := true,
 >    ));;
 gap> doTree(3, 10^6/10, 5, 10^6/2, 4, 10^6/10, 12, 10^6/10);;
 gap> ResetLayoutOptions();;

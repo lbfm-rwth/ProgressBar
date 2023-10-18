@@ -298,11 +298,12 @@ DeclareGlobalFunction( "PB_RefreshLine" );
 
 
 # Tree Manipulation
-DeclareGlobalFunction( "PB_First" );
 DeclareGlobalFunction( "PB_Reduce" );
 DeclareGlobalFunction( "PB_Perform" );
 
 # Tree Nodes
+DeclareGlobalFunction( "PB_First" );
+DeclareGlobalFunction( "PB_Last" );
 DeclareGlobalFunction( "PB_List" );
 DeclareGlobalFunction( "PB_Successors" );
 DeclareGlobalFunction( "PB_Predecessors" );
@@ -313,16 +314,3 @@ DeclareGlobalFunction( "PB_Siblings" );
 # Helpers
 DeclareGlobalFunction( "PB_ChildrenAndSelf" );
 DeclareGlobalFunction( "PB_UpperUntilCaller" );
-
-
-#############################################################################
-##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
-##                                                                         ##
-##  Layout Helpers
-##                                                                         ##
-##-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-##
-#############################################################################
-
-DeclareGlobalFunction( "PB_IsRootProcess" );
-DeclareGlobalFunction( "PB_PrinterPattern" );
-
