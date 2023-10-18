@@ -47,7 +47,9 @@ AutoDoc(rec(
         includes := [
             "intro.xml",
             "functions.xml",
-            "developer.xml"
+            "layouts.xml",
+            "developer.xml",
+            "modules.xml",
             ],
         ),
     autodoc := true )

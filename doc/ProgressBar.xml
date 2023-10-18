@@ -12,7 +12,9 @@
 <Body>
 <#Include SYSTEM "intro.xml">
 <#Include SYSTEM "functions.xml">
+<#Include SYSTEM "layouts.xml">
 <#Include SYSTEM "developer.xml">
+<#Include SYSTEM "modules.xml">
 <#Include SYSTEM "_AutoDocMainFile.xml">
 </Body>
 <TheIndex/>

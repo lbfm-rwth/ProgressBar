@@ -34,29 +34,29 @@ PB_ProgressBarPrinter.printIndefinite := function(process, id, options)
     local block, i, l;
     block := process.blocks.(id);
     PB_MoveCursorToCoordinate(block.x, block.y);
-    if process.terminated then
+    if process.status = "complete" then
         PB_Print(options.bar_prefix);
         PB_Print(Concatenation(ListWithIdenticalEntries(block.bar_length, options.bar_symbol_full)));
         PB_Print(options.bar_suffix);
     else
-        if not IsBound(block.timeStamp) then
+        if not IsBound(block.totalTime) then
             block.toggle := 0;
-            block.timeStamp := process.timeStamp;
+            block.totalTime := 0;
         fi;
-        if process.timeStamp - block.timeStamp > options.dt then
-            block.toggle := (block.toggle + 1) mod 2;
-            block.timeStamp := process.timeStamp;
+        if process.totalTime - block.totalTime > options.dt then
+            block.toggle := (block.toggle - 1) mod options.period;
+            block.totalTime := process.totalTime;
         fi;
         i := block.toggle;
         l := 1;
         PB_Print(options.bar_prefix);
         while l <= block.bar_length do
-            if i = 0 then
+            if i < options.full_length then
                 PB_Print(options.bar_symbol_full);
             else
                 PB_Print(options.bar_symbol_empty);
             fi;
-            i := (i + 1) mod 2;
+            i := (i + 1) mod options.period;
             l := l + 1;
         od;
         PB_Print(options.bar_suffix);
@@ -64,18 +64,18 @@ PB_ProgressBarPrinter.printIndefinite := function(process, id, options)
 end;
 
 PB_ProgressBarPrinter.generate := function(process, id, options)
-    local block, curStep, r, bar_length, bar_length_full, bar_length_empty;
+    local block, completedSteps, r, bar_length, bar_length_full, bar_length_empty;
     block := process.blocks.(id);
     # save data
     bar_length := block.w - Length(options.bar_prefix) - Length(options.bar_suffix);
     block.bar_length := bar_length;
-    if IsInfinity(process.nrSteps) then
+    if IsInfinity(process.totalSteps) then
         # print progress bar
         PB_ProgressBarPrinter.printIndefinite(process, id, options);
     else
         # progress bar length
-        curStep := Maximum(0, process.curStep);
-        r := curStep / process.nrSteps;
+        completedSteps := Maximum(0, process.completedSteps);
+        r := completedSteps / process.totalSteps;
         bar_length_full := Int(bar_length * r);
         bar_length_empty := bar_length - bar_length_full;
         # print progress bar
@@ -93,16 +93,16 @@ PB_ProgressBarPrinter.generate := function(process, id, options)
     fi;
 end;
 
-PB_ProgressBarPrinter.refresh := function(process, id, options)
-    local block, curStep, r, bar_length_full, l;
+PB_ProgressBarPrinter.update := function(process, id, options)
+    local block, completedSteps, r, bar_length_full, l;
     block := process.blocks.(id);
-    curStep := Maximum(0, process.curStep);
-    if IsInfinity(process.nrSteps) then
+    completedSteps := Maximum(0, process.completedSteps);
+    if IsInfinity(process.totalSteps) then
         # print progress bar
         PB_ProgressBarPrinter.printIndefinite(process, id, options);
     else
         # progress bar length
-        r := curStep / process.nrSteps;
+        r := completedSteps / process.totalSteps;
         bar_length_full := Int(block.bar_length * r);
         # print progress bar
         l := bar_length_full - block.bar_length_full;
@@ -113,5 +113,5 @@ PB_ProgressBarPrinter.refresh := function(process, id, options)
         # save data
         block.bar_length_full := bar_length_full;
     fi;
-    return PB_State.Success;
+    return true;
 end;

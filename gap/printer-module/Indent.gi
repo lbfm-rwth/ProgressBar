@@ -82,6 +82,6 @@ PB_IndentPrinter.generate := function(process, id, options)
 	PB_IndentPrinter.print(process, id, options);
 end;
 
-PB_IndentPrinter.refresh := function(process, id, options)
+PB_IndentPrinter.update := function(process, id, options)
 	return true;
 end;

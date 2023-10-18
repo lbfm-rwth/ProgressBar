@@ -16,7 +16,7 @@ PrintSquare := function(n, s)
     for i in [1 .. n] do
         PB_Print(ss);
     od;
-    PB_PrintNewLine();
+    PB_CreateNewLine();
 end;
 
 # width: 2 * n - 1
@@ -30,5 +30,5 @@ PrintDots := function(n, m, s)
             PB_Print(s);
         od;
     od;
-    PB_PrintNewLine();
+    PB_CreateNewLine();
 end;
