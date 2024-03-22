@@ -209,9 +209,6 @@ in <C>ProgressPrinter.Options</C>:
 <Item>
 <C>ProgressPrinter.InitialConfiguration</C>
 </Item>
-<Item>
-<C>ProgressPrinter.StyleAndColor</C>
-</Item>
 </List>
 </Item>
 
@@ -283,7 +280,12 @@ is implemented as a record that eventually contains the following entries:
 
 <List>
 
-<Mark>Process</Mark>
+<Mark>Layout</Mark>
+<Item>
+A record <C>rec(Setup, DefaultOptions)</C> for setting up a layout.
+</Item>
+
+<Mark>RootProcess</Mark>
 <Item>
 The process tree containing the main process as the root.
 </Item>
@@ -298,14 +300,14 @@ A record <C>rec(w, h)</C> encoding the virtual bounds in the terminal.
 A record <C>rec(x, y)</C> encoding the cursor position.
 </Item>
 
+<Mark>TimeStamp</Mark>
+<Item>
+An internal time stamp that is changed whenever a process is refreshed.
+</Item>
+
 <Mark>Options</Mark>
 <Item>
 The current options record for <C>Layout.Setup</C>.
-</Item>
-
-<Mark>Layout</Mark>
-<Item>
-A record <C>rec(Setup, DefaultOptions)</C> for setting up a layout.
 </Item>
 
 <Mark>Pattern</Mark>
@@ -323,9 +325,9 @@ Here, <C>factor</C> and <C>a</C> must be integers, <C>id</C> the identifier of a
 and <C>param</C> a parameter of a block, i.e. either <C>"x"</C>, <C>"y"</C>, <C>"w"</C> or <C>"h"</C>.
 </Item>
 
-<Mark>StyleAndColor</Mark>
+<Mark>CurProcess</Mark>
 <Item>
-A function that takes as input a process, and returns a record <C>rec(style, foregroundColor, backgroundColor)</C>.
+The process that is currently running.
 </Item>
 
 </List>
@@ -459,7 +461,9 @@ Extra content of the process that may be used by the progress printer or printer
 
 <Mark>blocks</Mark>
 <Item>
-A list of blocks, records of the form <C>rec(x, y, w, h)</C>.
+A record containing entries <C>id := block</C>,
+where <C>id</C> is a string corresponding to an id in the used pattern,
+and a <C>block</C> is a record of the form <C>rec(x, y, w, h)</C>.
 A printer block may be popullated with additional entries by the corresponding printer module.
 </Item>
 
@@ -476,7 +480,7 @@ A printer block may be popullated with additional entries by the corresponding p
 <Section Label="Progress Printer Example">
 <Heading>Example</Heading>
 
-
+TODO
 
 </Section>
 

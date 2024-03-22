@@ -35,8 +35,8 @@ BindGlobal("StandardLayout", rec());
 
 StandardLayout.DefaultOptions := Immutable(rec(
 	printID := false,
-	printETA := false,
     printTotalTime := true,
+	printETA := false,
 	highlightCurStep := true,
 	highlightColor := "red",
 	highlightStyle := "bold",

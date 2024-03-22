@@ -146,9 +146,9 @@ InstallGlobalFunction("SetProcess", function(args...)
 		children := [],
 		depth := 0,
 		totalTime := 0,
+		status := "inactive",
 		completedSteps := -1,
 		totalSteps := totalSteps,
-		status := "inactive",
 		content := content,
 		blocks := rec(),
 	);
