@@ -51,9 +51,13 @@ gap> doLoop(7, 10^6/4);;
 ]]></Log>
 
 In the above example we might encounter the following outputs during the execution of the iteration.
-All these outputs are visible in the same line of the terminal for roughly 1/4 of a second.
+All these outputs are visible in the same lines of the terminal for roughly 1/4 of a second.
 <Log><![CDATA[
-TODO
+| Total Time ~ 00:00:00
+[========================================-------------------------------] | 4/7
+
+| Total Time ~ 00:00:01
+[=======================================================================] | 7/7
 ]]></Log>
 
 The package can also handle very fast updates,
@@ -100,7 +104,14 @@ gap> doLoop(8, 10^4);;
 
 In the above example we might encounter the following outputs during the execution of the iteration.
 <Log><![CDATA[
-TODO
+| Total Time ~ 00:00:01
+[--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--=] | 123/oo
+
+| Total Time ~ 00:00:02
+[==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==-] | 193/oo
+
+| Total Time ~ 00:00:03
+[===================================================================] | 256/oo
 ]]></Log>
 
 Sometimes we can actually compute the number of steps needed
@@ -171,7 +182,17 @@ gap> doNestedLoop(3, 10^6/2, 50, 10^4);;
 
 An example output might look like this
 <Log><![CDATA[
+| Total Time ~ 00:00:01
+[==============================================-----------------------] |  2/ 3
+   [------------------------------------------------------------------] |  0/50
 
+| Total Time ~ 00:00:02
+[==============================================-----------------------] |  2/ 3
+   [===============================================-------------------] | 36/50
+
+| Total Time ~ 00:00:02
+[=====================================================================] |  3/ 3
+   [==================================================================] | 50/50
 ]]></Log>
 
 </Section>
@@ -214,7 +235,11 @@ gap> ResetLayoutOptions();;
 
 Example output during the execution of the function:
 <Log><![CDATA[
-TODO
+| Total Time ~ 00:00:15
+[==============================================-----------------------] |  2/ 3
+   [=======================================---------------------------] |  3/ 5
+   |  [===============================--------------------------------] |  2/ 4
+   [------------------------------------------------------------------] |  0/12
 ]]></Log>
 
 In the above example we create the processes on the fly,
@@ -224,12 +249,19 @@ whereas for each of the ones before that it had 1 digit.
 
 Example output before process <Q>Right</Q> gets created for the first time:
 <Log><![CDATA[
-TODO
+| Total Time ~ 00:00:03
+[-----------------------------------------------------------------------] | 0/3
+   [======================================================--------------] | 4/5
+      [-----------------------------------------------------------------] | 0/4
 ]]></Log>
 
 Example output after process <Q>Right</Q> gets created for the first time:
 <Log><![CDATA[
-TODO
+| Total Time ~ 00:00:11
+[=======================----------------------------------------------] |  1/ 3
+   [==================================================================] |  5/ 5
+   |  [===============================================================] |  4/ 4
+   [======================================----------------------------] |  7/12
 ]]></Log>
 
 If we want to see all processes from the beginning, we need to set the processes before the most outer loop starts.
@@ -264,7 +296,11 @@ gap> ResetLayoutOptions();;
 
 Then the output looks like this from the start:
 <Log><![CDATA[
-TODO
+| Total Time ~ 00:00:03
+[---------------------------------------------------------------------] |  0/ 3
+   [=======================================---------------------------] |  3/ 5
+   |  [---------------------------------------------------------------] |  0/ 4
+   [------------------------------------------------------------------] |  0/12
 ]]></Log>
 
 
@@ -280,9 +316,40 @@ If for example we want to compare the performance of different processes,
 it might be more intuitive to switch to the table layout. <P/>
 
 For this we need to define a dummy process, that we terminate manually in the end.
-All processes we want to track have to be defined as children of this dummy.
+All processes we want to track have to be defined as children of this dummy. <P/>
 
 TODO
+
+</Section>
+
+
+<!--===========================================================================
+||||  Example : Stopping                                                   ||||
+============================================================================-->
+
+
+<Section Label="Example Stopping">
+<Heading>Example: Stopping</Heading>
+
+If there is code that we do not want to track in our process,
+we can use <C>StopProcess</C> and <C>StartProcess</C>. <P/>
+
+<Log><![CDATA[
+gap> LoadPackage("ProgressBar");;
+gap> doLoopWithStop := function(n, nSleep, mSleep)
+>      local i;
+>      for i in ProcessIterator([1 .. n], "proc") do
+>        MicroSleep(nSleep);
+>        StopProcess("proc");
+>        MicroSleep(mSleep);
+>        StartProcess("proc");
+>      od;
+>    end;;
+gap> doLoopWithStop(50, 10^6/10, 10^6/10);;
+]]></Log>
+
+In the above example the code runs for roughly 10 seconds,
+but the tracked total time that contributes to the process shows roughly 5 seconds.
 
 </Section>
 
