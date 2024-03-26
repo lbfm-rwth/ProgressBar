@@ -131,7 +131,10 @@ InstallGlobalFunction("SetProcess", function(args...)
 	if Length(args) >= 3 then
 		parent := PB_GetProcess(args[3]);
 	else
-		parent := fail;
+		parent := ProgressPrinter.CurProcess;
+		while parent <> fail and parent.status = "complete" do
+			parent := parent.parent;
+		od;
 	fi;
 	if Length(args) >= 4 then
 		content := args[4];
@@ -158,6 +161,9 @@ InstallGlobalFunction("SetProcess", function(args...)
 		PB_StartProgressPrinter(process);
 	else
 		pos := PositionProperty(parent.children, proc -> proc.id = id);
+		if pos = fail then
+			pos := PositionProperty(parent.children, proc -> proc.completedSteps = -1);
+		fi;
 		if pos = fail then
 			process.depth := parent.depth + 1;
 			Add(parent.children, process);
