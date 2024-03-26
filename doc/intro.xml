@@ -163,8 +163,7 @@ gap> doLoop(8, 10^4);;
 <Heading>Example: Nested Loop</Heading>
 
 The package also supports displaying nested loops.
-For this we need to specify the parent-child relationships of the individual processes.
-We also adjust the display to show the total execution time of the root process.
+For this it is recommended to specify the parent-child relationships of the individual processes.
 <Log><![CDATA[
 gap> LoadPackage("ProgressBar");;
 gap> doNestedLoop := function(n, nSleep, m, mSleep)
@@ -177,7 +176,6 @@ gap> doNestedLoop := function(n, nSleep, m, mSleep)
 >      od;
 >    end;;
 gap> doNestedLoop(3, 10^6/2, 50, 10^4);;
-
 ]]></Log>
 
 An example output might look like this
@@ -194,6 +192,27 @@ An example output might look like this
 [=====================================================================] |  3/ 3
    [==================================================================] | 50/50
 ]]></Log>
+
+We don't have to set the ids or parent-child relationships if we don't want to
+and let the package handle this itself.
+The result however might not be as expected, if the relations are non-trivial.
+<Log><![CDATA[
+gap> LoadPackage("ProgressBar");;
+gap> doNestedLoop := function(n, nSleep, m, mSleep, l, lSleep)
+>      local i, j, k;
+>      for i in ProcessIterator([1 .. n]) do
+>        MicroSleep(nSleep);
+>        for j in ProcessIterator([1 .. m]) do
+>          MicroSleep(mSleep);
+>          for k in ProcessIterator([1 .. l]) do
+>            MicroSleep(lSleep);
+>          od;
+>        od;
+>      od;
+>    end;;
+gap> doNestedLoop(3, 10^6/2, 10, 10^4, 20, 10^4);;
+]]></Log>
+
 
 </Section>
 
