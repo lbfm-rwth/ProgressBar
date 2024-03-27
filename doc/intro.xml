@@ -155,6 +155,37 @@ gap> doLoop(8, 10^4);;
 
 
 <!--===========================================================================
+||||  Example : Value                                                      ||||
+============================================================================-->
+
+
+<Section Label="Example Value">
+<Heading>Example: Printing Values</Heading>
+
+If we want to print the value of the current iteration,
+this can be done via an optional content record. <P/>
+
+<Log><![CDATA[
+gap> LoadPackage("ProgressBar");;
+gap> doLoopWithValue := function(n, nSleep)
+>      local i, j;
+>      for i in ProcessIterator([1 .. n], rec(
+>          title := JoinStringsWithSeparator([
+>            "---------------",
+>            "Main iteration:",
+>            "  j = {{value + 100}}",
+>          ], "\n"))) do
+>        j := i + 100;
+>        MicroSleep(nSleep);
+>      od;
+>    end;;
+gap> doLoopWithValue(35, 10^6/10);;
+]]></Log>
+
+</Section>
+
+
+<!--===========================================================================
 ||||  Example : Nested Loop                                                ||||
 ============================================================================-->
 

@@ -55,8 +55,9 @@ InstallGlobalFunction("ProcessIterator", function(args...)
 	process := CallFuncList(SetProcess, processArgs);
 	processIter := rec(process := process, iter := iter);
 	processIter.NextIterator := function(procIter)
+		process.value := NextIterator(procIter!.iter);
 		UpdateProcess(procIter!.process);
-		return NextIterator(procIter!.iter);
+		return process.value;
 	end;
 	processIter.IsDoneIterator := function(procIter)
 		local isDone;
@@ -210,6 +211,9 @@ InstallGlobalFunction("ResetProcess", function(args...)
 		proc.totalTime := 0;
 		proc.completedSteps := -1;
 		proc.status := "inactive";
+		if IsBound(proc.value) then
+			Unbind(proc.value);
+		fi;
 	end);
 
 	if doRefresh then

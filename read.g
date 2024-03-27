@@ -48,6 +48,7 @@ ReadPackage( "ProgressBar", "gap/printer-module/ProgressBar.gi");
 ReadPackage( "ProgressBar", "gap/printer-module/ProgressRatio.gi");
 ReadPackage( "ProgressBar", "gap/printer-module/StaticInline.gi");
 ReadPackage( "ProgressBar", "gap/printer-module/TotalTime.gi");
+ReadPackage( "ProgressBar", "gap/printer-module/Value.gi");
 ReadPackage( "ProgressBar", "gap/printer-module/Highlight.gi");
 
 
