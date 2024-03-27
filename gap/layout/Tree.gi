@@ -37,6 +37,7 @@ TreeLayout.DefaultOptions := Immutable(rec(
 	# pattern encoding
 	pattern_encoding := [
         ["Root", "time"],
+        ["HasTitle", "value"],
         ["All", "bar", "ratio"],
     ],
     # print bool options
@@ -85,6 +86,12 @@ TreeLayout.Pattern := function(pattern, options, name)
 		printer_options := rec(
 			prefix := options.header_prefix,
 		);
+    elif name = "value" then
+        printer := PB_ValuePrinter;
+        printer_options := rec(
+            id := "title",
+            prefix := options.header_prefix,
+        );
 	elif name = "ratio" then
 		pattern.sync := ["w"];
 		printer := PB_ProgressRatioPrinter;
@@ -122,9 +129,10 @@ end;
 
 
 TreeLayout.Setup := function(options)
-    local isRoot, main, i, j, line, code, name, pattern, sep;
+    local isRoot, hasTitle, main, i, j, line, code, name, pattern, sep;
 
     isRoot := {process} -> process = ProgressPrinter.RootProcess;
+    hasTitle := {process} -> IsBound(process.content.title);
 
     main := rec(
         id := "main",
@@ -143,6 +151,8 @@ TreeLayout.Setup := function(options)
         );
         if options.pattern_encoding[i][1] = "Root" then
             line.isActive := isRoot;
+        elif options.pattern_encoding[i][1] = "HasTitle" then
+            line.isActive := hasTitle;
         else
             line.isActive := ReturnTrue;
         fi;
