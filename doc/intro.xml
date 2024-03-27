@@ -163,14 +163,13 @@ gap> doLoop(8, 10^4);;
 <Heading>Example: Nested Loop</Heading>
 
 The package also supports displaying nested loops.
-For this it is recommended to specify the parent-child relationships of the individual processes.
 <Log><![CDATA[
 gap> LoadPackage("ProgressBar");;
 gap> doNestedLoop := function(n, nSleep, m, mSleep)
 >      local i, j;
->      for i in ProcessIterator([1 .. n], "1") do
+>      for i in ProcessIterator([1 .. n]) do
 >        MicroSleep(nSleep);
->        for j in ProcessIterator([1 .. m], "2", "1") do
+>        for j in ProcessIterator([1 .. m]) do
 >          MicroSleep(mSleep);
 >        od;
 >      od;
@@ -193,27 +192,6 @@ An example output might look like this
    [==================================================================] | 50/50
 ]]></Log>
 
-We don't have to set the ids or parent-child relationships if we don't want to
-and let the package handle this itself.
-The result however might not be as expected, if the relations are non-trivial.
-<Log><![CDATA[
-gap> LoadPackage("ProgressBar");;
-gap> doNestedLoop := function(n, nSleep, m, mSleep, l, lSleep)
->      local i, j, k;
->      for i in ProcessIterator([1 .. n]) do
->        MicroSleep(nSleep);
->        for j in ProcessIterator([1 .. m]) do
->          MicroSleep(mSleep);
->          for k in ProcessIterator([1 .. l]) do
->            MicroSleep(lSleep);
->          od;
->        od;
->      od;
->    end;;
-gap> doNestedLoop(3, 10^6/2, 10, 10^4, 20, 10^4);;
-]]></Log>
-
-
 </Section>
 
 
@@ -232,24 +210,20 @@ This package can handle any process tree. <P/>
 gap> LoadPackage("ProgressBar");;
 gap> doTree := function(n, nSleep, l, lSleep, m, mSleep, r, rSleep)
 >      local i, j, k;
->      for i in ProcessIterator([1 .. n], "Root", fail) do
+>      for i in ProcessIterator([1 .. n]) do
 >        MicroSleep(nSleep);
->        for j in ProcessIterator([1 .. l], "Left", "Root") do
+>        for j in ProcessIterator([1 .. l]) do
 >          MicroSleep(lSleep);
->          for k in ProcessIterator([1 .. m], "Inner", "Left") do
+>          for k in ProcessIterator([1 .. m]) do
 >            MicroSleep(mSleep);
 >          od;
 >        od;
->        for j in ProcessIterator([1 .. r], "Right", "Root") do
+>        for j in ProcessIterator([1 .. r]) do
 >          MicroSleep(rSleep);
 >        od;
 >      od;
 >    end;;
-gap> SetLayoutOptions(rec(
->      printID := true,
->    ));;
 gap> doTree(3, 10^6/10, 5, 10^6/2, 4, 10^6/10, 12, 10^6/10);;
-gap> ResetLayoutOptions();;
 ]]></Log>
 
 Example output during the execution of the function:
@@ -305,11 +279,7 @@ gap> doTree := function(n, nSleep, l, lSleep, m, mSleep, r, rSleep)
 >        od;
 >      od;
 >    end;;
-gap> SetLayoutOptions(rec(
->      printID := true,
->    ));;
 gap> doTree(3, 10^6/10, 5, 10^6/2, 4, 10^6/10, 12, 10^6/10);;
-gap> ResetLayoutOptions();;
 ]]></Log>
 </Section>
 

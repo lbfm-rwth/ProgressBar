@@ -101,7 +101,7 @@ DeclareGlobalFunction( "ResetLayoutOptions" );
 
 ## <#GAPDoc Label="ProcessIterator">
 ## <ManSection>
-## <Func Name="ProcessIterator" Arg="iterLike[, id[, parent[, content]]]"/>
+## <Func Name="ProcessIterator" Arg="iterLike[, id[, parent]][, content]"/>
 ## <Description>
 ##   Returns an iterator that behaves the same way as <A>iterLike</A>
 ##   and displays the progression of the iteration in the terminal,
@@ -114,11 +114,12 @@ DeclareGlobalFunction( "ResetLayoutOptions" );
 ##   until <C>IsDoneIterator</C> returns <C>true</C>. <P/>
 ##   The optional argument <A>id</A> must be a
 ##   unique string identifier for the process.
-##   If no <A>id</A> is provided, this process is declared as the root
-##   and is assigned a random identifier. <P/>
+##   If no <A>id</A> is provided, this process is assigned a random identifier. <P/>
 ##   The optional argument <A>parent</A> must either be a process iterator,
 ##   a process record, the id of a valid process,
-##   or <C>fail</C> to declare the process as the root. It is set to <C>fail</C> by default. <P/>
+##   or <C>fail</C> to declare the process as the root.
+##   If no <A>parent<A> is set, the parent is set automatically
+##   to the most recent active process. <P/>
 ##   The optional argument <A>content</A> must be a record,
 ##   that contains additional information for the printer,
 ##   possibly about the progress of the process,
@@ -130,7 +131,7 @@ DeclareGlobalFunction( "ProcessIterator" );
 
 ## <#GAPDoc Label="SetProcess">
 ## <ManSection>
-## <Func Name="SetProcess" Arg="totalSteps[, id[, parent[, content]]]"/>
+## <Func Name="SetProcess" Arg="totalSteps[, id[, parent]][, content]"/>
 ## <Description>
 ##   Returns a (new) process whose parameters are set to the given arguments,
 ##   see Chapter <Ref Chap="Intro"/> for examples. <P/>
