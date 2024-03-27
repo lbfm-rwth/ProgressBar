@@ -19,6 +19,8 @@
 /doc/*.toc
 /doc/manual.pdf
 /doc/_*.xml
+/doc/ProgressBar*
+/doc/title.xml
 
 /bin/
 /gen/
