@@ -1,7 +1,7 @@
 name: ProgressBar
-version: "0.3"
+version: "0.4"
 license: "GPL-2.0-or-later"
-date: 2023-02-22
+date: 2024-03-27
 description: |
     The GAP package ProgressBar displays the progression of an iteration in the terminal.
 
@@ -26,7 +26,7 @@ packageinfo: https://lbfm-rwth.github.io/ProgressBar/PackageInfo.g
 
 downloads:
     - name: .tar.gz
-      url: https://github.com/lbfm-rwth/ProgressBar/releases/download/v0.3/ProgressBar-0.3.tar.gz
+      url: https://github.com/lbfm-rwth/ProgressBar/releases/download/v0.4/ProgressBar-0.4.tar.gz
 
 abstract: |
 
@@ -35,27 +35,27 @@ doc-html: doc/chap0_mj.html
 doc-pdf: doc/manual.pdf
 citeas: |
     <p class='BibEntry'>
-    [<span class='BibKey'>Rob23</span>]   <b class='BibAuthor'>Rober, F.</b>,
+    [<span class='BibKey'>Rob24</span>]   <b class='BibAuthor'>Rober, F.</b>,
      <i class='BibTitle'>ProgressBar, The GAP package ProgressBar displays the progression of an iteration in the terminal.,
-             Version 0.3</i>
-     (<span class='BibYear'>2023</span>)<br />
+             Version 0.4</i>
+     (<span class='BibYear'>2024</span>)<br />
     (<span class='BibNote'>GAP package</span>),
     <span class='BibHowpublished'><a href="https://lbfm-rwth.github.io/ProgressBar/">https://lbfm-rwth.github.io/ProgressBar/</a></span>.
     </p>
     
 
 bibtex: |
-    @misc{ ProgressBar0.3,
+    @misc{ ProgressBar0.4,
       author =           {Rober, F.},
       title =            {{ProgressBar},  The  GAP  package ProgressBar displays
                           the  progression  of  an  iteration  in the terminal.,
-                          {V}ersion 0.3},
-      month =            {Feb},
-      year =             {2023},
+                          {V}ersion 0.4},
+      month =            {Mar},
+      year =             {2024},
       note =             {GAP package},
       howpublished =     {\href       {https://lbfm-rwth.github.io/ProgressBar/}
                           {\texttt{https://lbfm-rwth.github.io/}\discretionary
                           {}{}{}\texttt{ProgressBar/}}},
-      printedkey =       {Rob23}
+      printedkey =       {Rob24}
     }
 

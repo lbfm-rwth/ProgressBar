@@ -1,192 +1,321 @@
   
   [1X1 [33X[0;0YIntroduction[133X[101X
   
-  [33X[0;0YThis chapter serves as an introduction to the package [5XProgressBar[105X.[133X
+  [33X[0;0YThis  chapter  serves  as  an  introduction  to  the package [5XProgressBar[105X and
+  includes many examples.[133X
   
   [33X[0;0YThe  main purpose of this package is to display the progression of a process
   in  the  terminal via a progress bar that refreshes in the screen after each
   step of the process.[133X
   
+  [33X[0;0YInstead  of  writing  new  lines in the terminal screen after each step of a
+  process,  the  terminal  screen  gets  refreshed  in  space.  This method of
+  displaying  information  avoids  spamming  in  the terminal, and provides an
+  intuitive and clean visualization of the progress.[133X
+  
   
   [1X1.1 [33X[0;0YExample: Loop[133X[101X
   
   [33X[0;0YIn  the  first  example we show the simplest use case of the package, namely
-  displaying the process of a loop.[133X
+  displaying the progression of a loop over a fixed list.[133X
   
-  [33X[0;0YBefore  the  start  of  a process we call [11XStartProcess[111X, where we specify the
-  number  of steps needed to terminate. Then after the completion of each step
-  we call [11XUpdateProcess[111X.[133X
+  [33X[0;0YFor this we simply wrap the list into the function [10XProcessIterator[110X.[133X
   
   [4X[32X  Example  [32X[104X
     [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
-    [4X[25Xgap>[125X [27XdoLoop := function(n)[127X[104X
+    [4X[25Xgap>[125X [27XdoLoop := function(n, nSleep)[127X[104X
     [4X[25X>[125X [27X     local i;[127X[104X
-    [4X[25X>[125X [27X     StartProcess(n);;[127X[104X
-    [4X[25X>[125X [27X     for i in [1 .. n] do[127X[104X
-    [4X[25X>[125X [27X       Sleep(1);[127X[104X
-    [4X[25X>[125X [27X       UpdateProcess();[127X[104X
+    [4X[25X>[125X [27X     for i in ProcessIterator([1 .. n]) do[127X[104X
+    [4X[25X>[125X [27X       MicroSleep(nSleep);[127X[104X
     [4X[25X>[125X [27X     od;[127X[104X
     [4X[25X>[125X [27X   end;;[127X[104X
-    [4X[25Xgap>[125X [27XdoLoop(7);[127X[104X
-    [4X[28X [===================================================] 100% | 7/7 | eta 0:00:00[128X[104X
+    [4X[25Xgap>[125X [27XdoLoop(7, 10^6/4);;[127X[104X
   [4X[32X[104X
   
   [33X[0;0YIn  the  above  example  we might encounter the following outputs during the
-  execution  of  the iteration. All these outputs are visible in the same line
-  of the terminal for roughly 1 second.[133X
+  execution  of the iteration. All these outputs are visible in the same lines
+  of the terminal for roughly 1/4 of a second.[133X
   
   [4X[32X  Example  [32X[104X
-    [4X[28X [=======--------------------------------------------]  14% | 1/7 | eta 0:00:06[128X[104X
-    [4X[28X [=====================------------------------------]  42% | 3/7 | eta 0:00:04[128X[104X
-    [4X[28X [====================================---------------]  71% | 5/7 | eta 0:00:02[128X[104X
-    [4X[28X [===================================================] 100% | 7/7 | eta 0:00:00[128X[104X
+    [4X[28X| Total Time ~ 00:00:00[128X[104X
+    [4X[28X[========================================-------------------------------] | 4/7[128X[104X
+    [4X[28X[128X[104X
+    [4X[28X| Total Time ~ 00:00:01[128X[104X
+    [4X[28X[=======================================================================] | 7/7[128X[104X
   [4X[32X[104X
   
-  
-  [1X1.2 [33X[0;0YExample: Process with Steps[133X[101X
-  
-  [33X[0;0YApart from displaying loops, the package can be used to display the progress
-  during  the  execution  of a function as well. We disable the display of eta
-  (expected  time  of  arrival/completion),  since  it  is meaningless in this
-  context.[133X
+  [33X[0;0YThe package can also handle very fast updates, but keep in mind that it adds
+  some  overhead  to the computation. In this example, the overhead acumulates
+  over  the  [22X5000[122X  iterations  to [22X2[122X extra seconds for a computation that would
+  otherwise only take about [22X5[122X seconds.[133X
   
   [4X[32X  Example  [32X[104X
     [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
-    [4X[25Xgap>[125X [27XdoSteps := function()[127X[104X
-    [4X[25X>[125X [27X     local proc, opts;[127X[104X
-    [4X[25X>[125X [27X     opts := rec(printETA := false);[127X[104X
-    [4X[25X>[125X [27X     proc := StartProcess(3, fail, "Process", "Doing Step 1", opts);;[127X[104X
-    [4X[25X>[125X [27X     Sleep(2);[127X[104X
-    [4X[25X>[125X [27X     UpdateProcess(proc, "Doing Step 2", opts);[127X[104X
-    [4X[25X>[125X [27X     Sleep(4);[127X[104X
-    [4X[25X>[125X [27X     UpdateProcess(proc, "Doing Step 3", opts);[127X[104X
-    [4X[25X>[125X [27X     Sleep(2);[127X[104X
-    [4X[25X>[125X [27X     UpdateProcess(proc, "Finished", opts);[127X[104X
-    [4X[25X>[125X [27X   end;;[127X[104X
-    [4X[25Xgap>[125X [27XdoSteps();[127X[104X
-    [4X[28X | Finished[128X[104X
-    [4X[28X [=================================================================] 100% | 3/3[128X[104X
-  [4X[32X[104X
-  
-  [33X[0;0YIn  the  above  example  we  would  see  the  following  outputs  before the
-  termination of the process, each displayed in the same lines of the screen.[133X
-  
-  [4X[32X  Example  [32X[104X
-    [4X[28X | Doing Step 1[128X[104X
-    [4X[28X [-----------------------------------------------------------------]   0% | 0/3[128X[104X
-    [4X[28X[128X[104X
-    [4X[28X | Doing Step 2[128X[104X
-    [4X[28X [=====================--------------------------------------------]  33% | 1/3[128X[104X
-    [4X[28X[128X[104X
-    [4X[28X | Doing Step 3[128X[104X
-    [4X[28X [===========================================----------------------]  66% | 2/3[128X[104X
-  [4X[32X[104X
-  
-  
-  [1X1.3 [33X[0;0YExample: Nested Loop[133X[101X
-  
-  [33X[0;0YThe  package  also  supports  displaying  nested  loops. For this we need to
-  specify  the parent-child relationships of the individual processes. We also
-  adjust the display to show the total execution time of the root process.[133X
-  
-  [4X[32X  Example  [32X[104X
-    [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
-    [4X[25Xgap>[125X [27XdoNestedLoop := function(n, m)[127X[104X
-    [4X[25X>[125X [27X     local loop1, loop2, i, j;[127X[104X
-    [4X[25X>[125X [27X     SetDisplayOptionsForProgressBar(rec(printTotalTime := true));[127X[104X
-    [4X[25X>[125X [27X     loop1 := StartProcess(n, fail, "Outer Loop");;[127X[104X
-    [4X[25X>[125X [27X     for i in [1 .. n] do[127X[104X
-    [4X[25X>[125X [27X       loop2 := StartProcess(m, loop1, "Inner Loop");;[127X[104X
-    [4X[25X>[125X [27X       for j in [1 .. m] do[127X[104X
-    [4X[25X>[125X [27X         Sleep(1);[127X[104X
-    [4X[25X>[125X [27X         UpdateProcess(loop2);[127X[104X
-    [4X[25X>[125X [27X       od;[127X[104X
-    [4X[25X>[125X [27X       UpdateProcess(loop1);[127X[104X
+    [4X[25Xgap>[125X [27XdoLoop := function(n, nSleep)[127X[104X
+    [4X[25X>[125X [27X     local i;[127X[104X
+    [4X[25X>[125X [27X     for i in ProcessIterator([1 .. n]) do[127X[104X
+    [4X[25X>[125X [27X       MicroSleep(nSleep);[127X[104X
     [4X[25X>[125X [27X     od;[127X[104X
     [4X[25X>[125X [27X   end;;[127X[104X
-    [4X[25Xgap>[125X [27XdoNestedLoop(3, 5);[127X[104X
-    [4X[28X | Total Time 0:00:17[128X[104X
-    [4X[28X [===================================================] 100% | 3/3 | eta 0:00:00[128X[104X
+    [4X[25Xgap>[125X [27XdoLoop(5000, 1000);[127X[104X
+  [4X[32X[104X
+  
+  
+  [1X1.2 [33X[0;0YExample: Indefinite Loop[133X[101X
+  
+  [33X[0;0YWe can also display the progression of an indefinite loop.[133X
+  
+  [33X[0;0YFor this we simply wrap an iterator into the function [10XProcessIterator[110X.[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
+    [4X[25Xgap>[125X [27XdoLoop := function(n, nSleep)[127X[104X
+    [4X[25X>[125X [27X     local i;[127X[104X
+    [4X[25X>[125X [27X     for i in ProcessIterator(IteratorOfCombinations([1 .. n])) do[127X[104X
+    [4X[25X>[125X [27X       MicroSleep(nSleep);[127X[104X
+    [4X[25X>[125X [27X     od;[127X[104X
+    [4X[25X>[125X [27X   end;;[127X[104X
+    [4X[25Xgap>[125X [27XdoLoop(8, 10^4);;[127X[104X
+  [4X[32X[104X
+  
+  [33X[0;0YIn  the  above  example  we might encounter the following outputs during the
+  execution of the iteration.[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[28X| Total Time ~ 00:00:01[128X[104X
+    [4X[28X[--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--=] | 123/oo[128X[104X
+    [4X[28X[128X[104X
+    [4X[28X| Total Time ~ 00:00:02[128X[104X
+    [4X[28X[==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==--==-] | 193/oo[128X[104X
+    [4X[28X[128X[104X
+    [4X[28X| Total Time ~ 00:00:03[128X[104X
+    [4X[28X[===================================================================] | 256/oo[128X[104X
+  [4X[32X[104X
+  
+  [33X[0;0YSometimes we can actually compute the number of steps needed for the process
+  to  terminate  beforehand.  This  will  change  the display and provide more
+  detailed information about the progress, see [14X1.1[114X.[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
+    [4X[25Xgap>[125X [27XdoLoop := function(n, nSleep)[127X[104X
+    [4X[25X>[125X [27X     local iter, i;[127X[104X
+    [4X[25X>[125X [27X     iter := ProcessIterator(rec([127X[104X
+    [4X[25X>[125X [27X       iter := IteratorOfCombinations([1 .. n]),[127X[104X
+    [4X[25X>[125X [27X       totalSteps := 2^n[127X[104X
+    [4X[25X>[125X [27X     ));[127X[104X
+    [4X[25X>[125X [27X     for i in iter do[127X[104X
+    [4X[25X>[125X [27X       MicroSleep(nSleep);[127X[104X
+    [4X[25X>[125X [27X     od;[127X[104X
+    [4X[25X>[125X [27X   end;;[127X[104X
+    [4X[25Xgap>[125X [27XdoLoop(8, 10^4);;[127X[104X
+  [4X[32X[104X
+  
+  [33X[0;0YIf  we  set  the  [10XtotalSteps[110X wrong, the display will change to an indefinite
+  loop once we exceed them in the iteration.[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
+    [4X[25Xgap>[125X [27XdoLoop := function(n, nSleep)[127X[104X
+    [4X[25X>[125X [27X     local iter, i;[127X[104X
+    [4X[25X>[125X [27X     iter := ProcessIterator(rec([127X[104X
+    [4X[25X>[125X [27X       iter := IteratorOfCombinations([1 .. n]),[127X[104X
+    [4X[25X>[125X [27X       totalSteps := 2^(n-1)[127X[104X
+    [4X[25X>[125X [27X     ));[127X[104X
+    [4X[25X>[125X [27X     for i in iter do[127X[104X
+    [4X[25X>[125X [27X       MicroSleep(nSleep);[127X[104X
+    [4X[25X>[125X [27X     od;[127X[104X
+    [4X[25X>[125X [27X   end;;[127X[104X
+    [4X[25Xgap>[125X [27XdoLoop(8, 10^4);;[127X[104X
+  [4X[32X[104X
+  
+  
+  [1X1.3 [33X[0;0YExample: Printing Values[133X[101X
+  
+  [33X[0;0YIf we want to print the value of the current iteration, this can be done via
+  an optional content record.[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
+    [4X[25Xgap>[125X [27XdoLoopWithValue := function(n, nSleep)[127X[104X
+    [4X[25X>[125X [27X     local i, j;[127X[104X
+    [4X[25X>[125X [27X     for i in ProcessIterator([1 .. n], rec([127X[104X
+    [4X[25X>[125X [27X         title := JoinStringsWithSeparator([[127X[104X
+    [4X[25X>[125X [27X           "---------------",[127X[104X
+    [4X[25X>[125X [27X           "Main iteration:",[127X[104X
+    [4X[25X>[125X [27X           "  j = {{value + 100}}",[127X[104X
+    [4X[25X>[125X [27X         ], "\n"))) do[127X[104X
+    [4X[25X>[125X [27X       j := i + 100;[127X[104X
+    [4X[25X>[125X [27X       MicroSleep(nSleep);[127X[104X
+    [4X[25X>[125X [27X     od;[127X[104X
+    [4X[25X>[125X [27X   end;;[127X[104X
+    [4X[25Xgap>[125X [27XdoLoopWithValue(35, 10^6/10);;[127X[104X
+  [4X[32X[104X
+  
+  
+  [1X1.4 [33X[0;0YExample: Nested Loop[133X[101X
+  
+  [33X[0;0YThe package also supports displaying nested loops.[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
+    [4X[25Xgap>[125X [27XdoNestedLoop := function(n, nSleep, m, mSleep)[127X[104X
+    [4X[25X>[125X [27X     local i, j;[127X[104X
+    [4X[25X>[125X [27X     for i in ProcessIterator([1 .. n]) do[127X[104X
+    [4X[25X>[125X [27X       MicroSleep(nSleep);[127X[104X
+    [4X[25X>[125X [27X       for j in ProcessIterator([1 .. m]) do[127X[104X
+    [4X[25X>[125X [27X         MicroSleep(mSleep);[127X[104X
+    [4X[25X>[125X [27X       od;[127X[104X
+    [4X[25X>[125X [27X     od;[127X[104X
+    [4X[25X>[125X [27X   end;;[127X[104X
+    [4X[25Xgap>[125X [27XdoNestedLoop(3, 10^6/2, 50, 10^4);;[127X[104X
   [4X[32X[104X
   
   [33X[0;0YAn example output might look like this[133X
   
   [4X[32X  Example  [32X[104X
-    [4X[28X | Total Time 0:00:07[128X[104X
-    [4X[28X [=================----------------------------------]  33% | 1/3 | eta 0:00:11[128X[104X
-    [4X[28X   [===================------------------------------]  40% | 2/5 | eta 0:00:03[128X[104X
+    [4X[28X| Total Time ~ 00:00:01[128X[104X
+    [4X[28X[==============================================-----------------------] |  2/ 3[128X[104X
+    [4X[28X   [------------------------------------------------------------------] |  0/50[128X[104X
+    [4X[28X[128X[104X
+    [4X[28X| Total Time ~ 00:00:02[128X[104X
+    [4X[28X[==============================================-----------------------] |  2/ 3[128X[104X
+    [4X[28X   [===============================================-------------------] | 36/50[128X[104X
+    [4X[28X[128X[104X
+    [4X[28X| Total Time ~ 00:00:02[128X[104X
+    [4X[28X[=====================================================================] |  3/ 3[128X[104X
+    [4X[28X   [==================================================================] | 50/50[128X[104X
   [4X[32X[104X
   
   
-  [1X1.4 [33X[0;0YExample: Tree[133X[101X
+  [1X1.5 [33X[0;0YExample: Tree[133X[101X
   
-  [33X[0;0YWe  can  also display much more intertwined processes than nested loops. For
-  this  it  is  recommended  to  use [11XDeclareProcess[111X to define all parent-child
-  relationships of the individual processes before the root process starts. We
-  can  then  use  [11XStartProcess[111X  with  the  id  or process record to start each
-  process.[133X
-  
-  [33X[0;0YAdditionaly, we use some display options to disable removing a child process
-  when it terminates, and to highlight the current process that is running.[133X
+  [33X[0;0YWe  can also display much more intertwined processes than nested loops. This
+  package can handle any process tree.[133X
   
   [4X[32X  Example  [32X[104X
     [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
-    [4X[25Xgap>[125X [27XdoTree := function(n, l, m, r)[127X[104X
-    [4X[25X>[125X [27X     local root, left, leftInner, i, j, k;[127X[104X
-    [4X[25X>[125X [27X     SetDisplayOptionsForProgressBar(rec([127X[104X
-    [4X[25X>[125X [27X       printTotalTime := true,[127X[104X
-    [4X[25X>[125X [27X       removeChildren := false,[127X[104X
-    [4X[25X>[125X [27X       highlightCurStep := true[127X[104X
-    [4X[25X>[125X [27X     ));[127X[104X
-    [4X[25X>[125X [27X     # Declare Process Tree[127X[104X
-    [4X[25X>[125X [27X     root := DeclareProcess(n, fail, "Root", "Root");;[127X[104X
-    [4X[25X>[125X [27X     left := DeclareProcess(l, root, "left", "Left");;[127X[104X
-    [4X[25X>[125X [27X     leftInner := DeclareProcess(m, "left", "leftInner", "Inner");;[127X[104X
-    [4X[25X>[125X [27X     DeclareProcess(r, root, "right", "Right");;[127X[104X
-    [4X[25X>[125X [27X     # Start Process[127X[104X
-    [4X[25X>[125X [27X     StartProcess(root);;[127X[104X
-    [4X[25X>[125X [27X     for i in [1 .. n] do[127X[104X
-    [4X[25X>[125X [27X       StartProcess(left);;[127X[104X
-    [4X[25X>[125X [27X       for j in [1 .. l] do[127X[104X
-    [4X[25X>[125X [27X         Sleep(1);[127X[104X
-    [4X[25X>[125X [27X         StartProcess(leftInner);;[127X[104X
-    [4X[25X>[125X [27X         for k in [1.. m] do[127X[104X
-    [4X[25X>[125X [27X           Sleep(1);[127X[104X
-    [4X[25X>[125X [27X           UpdateProcess(leftInner);[127X[104X
+    [4X[25Xgap>[125X [27XdoTree := function(n, nSleep, l, lSleep, m, mSleep, r, rSleep)[127X[104X
+    [4X[25X>[125X [27X     local i, j, k;[127X[104X
+    [4X[25X>[125X [27X     for i in ProcessIterator([1 .. n]) do[127X[104X
+    [4X[25X>[125X [27X       MicroSleep(nSleep);[127X[104X
+    [4X[25X>[125X [27X       for j in ProcessIterator([1 .. l]) do[127X[104X
+    [4X[25X>[125X [27X         MicroSleep(lSleep);[127X[104X
+    [4X[25X>[125X [27X         for k in ProcessIterator([1 .. m]) do[127X[104X
+    [4X[25X>[125X [27X           MicroSleep(mSleep);[127X[104X
     [4X[25X>[125X [27X         od;[127X[104X
-    [4X[25X>[125X [27X         UpdateProcess(left);[127X[104X
     [4X[25X>[125X [27X       od;[127X[104X
-    [4X[25X>[125X [27X       StartProcess("right");;[127X[104X
-    [4X[25X>[125X [27X       for j in [1 .. r] do[127X[104X
-    [4X[25X>[125X [27X         Sleep(1);[127X[104X
-    [4X[25X>[125X [27X         UpdateProcess("right");[127X[104X
+    [4X[25X>[125X [27X       for j in ProcessIterator([1 .. r]) do[127X[104X
+    [4X[25X>[125X [27X         MicroSleep(rSleep);[127X[104X
     [4X[25X>[125X [27X       od;[127X[104X
-    [4X[25X>[125X [27X       UpdateProcess(root);[127X[104X
     [4X[25X>[125X [27X     od;[127X[104X
     [4X[25X>[125X [27X   end;;[127X[104X
-    [4X[25Xgap>[125X [27XdoTree(3, 5, 2, 4);[127X[104X
-    [4X[28X | Total Time 0:01:06[128X[104X
-    [4X[28X | Root[128X[104X
-    [4X[28X [===================================================] 100% | 3/3 | eta 0:00:00[128X[104X
-    [4X[28X    | Left[128X[104X
-    [4X[28X    [------------------------------------------------]   0% | 0/5 | eta ?:??:??[128X[104X
-    [4X[28X    |  | Inner[128X[104X
-    [4X[28X    |  [---------------------------------------------]   0% | 0/2 | eta ?:??:??[128X[104X
-    [4X[28X    | Right[128X[104X
-    [4X[28X    [------------------------------------------------]   0% | 0/4 | eta ?:??:??[128X[104X
+    [4X[25Xgap>[125X [27XdoTree(3, 10^6/10, 5, 10^6/2, 4, 10^6/10, 12, 10^6/10);;[127X[104X
   [4X[32X[104X
   
   [33X[0;0YExample output during the execution of the function:[133X
   
   [4X[32X  Example  [32X[104X
-    [4X[28X | Total Time 0:00:42[128X[104X
-    [4X[28X | Root[128X[104X
-    [4X[28X [=================----------------------------------]  33% | 1/3 | eta 0:00:43[128X[104X
-    [4X[28X    | Left[128X[104X
-    [4X[28X    [================================================] 100% | 5/5 | eta 0:00:00[128X[104X
-    [4X[28X    |  | Inner[128X[104X
-    [4X[28X    |  [---------------------------------------------]   0% | 0/2 | eta ?:??:??[128X[104X
-    [4X[28X    | Right[128X[104X
-    [4X[28X    [====================================------------]  75% | 3/4 | eta 0:00:01[128X[104X
+    [4X[28X| Total Time ~ 00:00:15[128X[104X
+    [4X[28X[==============================================-----------------------] |  2/ 3[128X[104X
+    [4X[28X   [=======================================---------------------------] |  3/ 5[128X[104X
+    [4X[28X   |  [===============================--------------------------------] |  2/ 4[128X[104X
+    [4X[28X   [------------------------------------------------------------------] |  0/12[128X[104X
   [4X[32X[104X
+  
+  [33X[0;0YIn  the above example we create the processes on the fly, so for example the
+  [21XRight[121X  process appears in the terminal only after we create this process for
+  the  first  time.  When  this  happens,  the  layout  of the display changes
+  slightly,  because  the  total  number of iterations for [21XRight[121X has 2 digits,
+  whereas  for  each  of  the  ones before that it had 1 digit. Example output
+  before process [21XRight[121X gets created for the first time:[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[28X| Total Time ~ 00:00:03[128X[104X
+    [4X[28X[-----------------------------------------------------------------------] | 0/3[128X[104X
+    [4X[28X   [======================================================--------------] | 4/5[128X[104X
+    [4X[28X      [-----------------------------------------------------------------] | 0/4[128X[104X
+  [4X[32X[104X
+  
+  [33X[0;0YExample output after process [21XRight[121X gets created for the first time:[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[28X| Total Time ~ 00:00:11[128X[104X
+    [4X[28X[=======================----------------------------------------------] |  1/ 3[128X[104X
+    [4X[28X   [==================================================================] |  5/ 5[128X[104X
+    [4X[28X   |  [===============================================================] |  4/ 4[128X[104X
+    [4X[28X   [======================================----------------------------] |  7/12[128X[104X
+  [4X[32X[104X
+  
+  [33X[0;0YIf  we  want  to  see  all  processes from the beginning, we need to set the
+  processes before the most outer loop starts.[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
+    [4X[25Xgap>[125X [27XdoTree := function(n, nSleep, l, lSleep, m, mSleep, r, rSleep)[127X[104X
+    [4X[25X>[125X [27X     local iter, i, j, k;[127X[104X
+    [4X[25X>[125X [27X     iter := ProcessIterator([1 .. n], "Root", fail);[127X[104X
+    [4X[25X>[125X [27X     SetProcess(l, "Left", "Root");[127X[104X
+    [4X[25X>[125X [27X     SetProcess(m, "Inner", "Left");[127X[104X
+    [4X[25X>[125X [27X     SetProcess(r, "Right", "Root");[127X[104X
+    [4X[25X>[125X [27X     for i in iter do[127X[104X
+    [4X[25X>[125X [27X       MicroSleep(nSleep);[127X[104X
+    [4X[25X>[125X [27X       for j in ProcessIterator([1 .. l], "Left", "Root") do[127X[104X
+    [4X[25X>[125X [27X         MicroSleep(lSleep);[127X[104X
+    [4X[25X>[125X [27X         for k in ProcessIterator([1 .. m], "Inner", "Left") do[127X[104X
+    [4X[25X>[125X [27X           MicroSleep(mSleep);[127X[104X
+    [4X[25X>[125X [27X         od;[127X[104X
+    [4X[25X>[125X [27X       od;[127X[104X
+    [4X[25X>[125X [27X       for j in ProcessIterator([1 .. r], "Right", "Root") do[127X[104X
+    [4X[25X>[125X [27X         MicroSleep(rSleep);[127X[104X
+    [4X[25X>[125X [27X       od;[127X[104X
+    [4X[25X>[125X [27X     od;[127X[104X
+    [4X[25X>[125X [27X   end;;[127X[104X
+    [4X[25Xgap>[125X [27XdoTree(3, 10^6/10, 5, 10^6/2, 4, 10^6/10, 12, 10^6/10);;[127X[104X
+  [4X[32X[104X
+  
+  [33X[0;0YThen the output looks like this from the start:[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[28X| Total Time ~ 00:00:03[128X[104X
+    [4X[28X[---------------------------------------------------------------------] |  0/ 3[128X[104X
+    [4X[28X   [=======================================---------------------------] |  3/ 5[128X[104X
+    [4X[28X   |  [---------------------------------------------------------------] |  0/ 4[128X[104X
+    [4X[28X   [------------------------------------------------------------------] |  0/12[128X[104X
+  [4X[32X[104X
+  
+  
+  [1X1.6 [33X[0;0YExample: Table[133X[101X
+  
+  [33X[0;0YIf for example we want to compare the performance of different processes, it
+  might be more intuitive to switch to the table layout.[133X
+  
+  [33X[0;0YFor  this  we  need to define a dummy process, that we terminate manually in
+  the  end.  All  processes we want to track have to be defined as children of
+  this dummy.[133X
+  
+  [33X[0;0YTODO[133X
+  
+  
+  [1X1.7 [33X[0;0YExample: Stopping[133X[101X
+  
+  [33X[0;0YIf  there  is  code  that we do not want to track in our process, we can use
+  [10XStopProcess[110X and [10XStartProcess[110X.[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[25Xgap>[125X [27XLoadPackage("ProgressBar");;[127X[104X
+    [4X[25Xgap>[125X [27XdoLoopWithStop := function(n, nSleep, mSleep)[127X[104X
+    [4X[25X>[125X [27X     local i;[127X[104X
+    [4X[25X>[125X [27X     for i in ProcessIterator([1 .. n], "proc") do[127X[104X
+    [4X[25X>[125X [27X       MicroSleep(nSleep);[127X[104X
+    [4X[25X>[125X [27X       StopProcess("proc");[127X[104X
+    [4X[25X>[125X [27X       MicroSleep(mSleep);[127X[104X
+    [4X[25X>[125X [27X       StartProcess("proc");[127X[104X
+    [4X[25X>[125X [27X     od;[127X[104X
+    [4X[25X>[125X [27X   end;;[127X[104X
+    [4X[25Xgap>[125X [27XdoLoopWithStop(50, 10^6/10, 10^6/10);;[127X[104X
+  [4X[32X[104X
+  
+  [33X[0;0YIn  the  above example the code runs for roughly 10 seconds, but the tracked
+  total time that contributes to the process shows roughly 5 seconds.[133X
   

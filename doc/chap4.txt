@@ -1,0 +1,343 @@
+  
+  [1X4 [33X[0;0YProgress Printer[133X[101X
+  
+  [33X[0;0YHere we include a guide how to modify the progress printing. This chapter is
+  intended for [13Xadvanced users[113X or [13Xdevelopers[113X of the package.[133X
+  
+  [33X[0;0YThe  [13Xprogress  printer[113X  is  a  framework  built from a collection of [13Xprinter
+  moduls[113X  that  are solely responsible to display a specific information about
+  the  current  state  of a process e.g. the number of completed iterations or
+  the  total  runtime.  Moreover  it  specifies  an  abstract  [13Xlayout[113X e.g. the
+  positional relations between the individual moduls.[133X
+  
+  [33X[0;0YIn  the  following  we  explain  the  terminology  of  the framework and the
+  technical implementation. See also Section [14X2.1[114X for some basic terminology.[133X
+  
+  [33X[0;0YIn the end we include an example how to adjust the progress printer.[133X
+  
+  
+  [1X4.1 [33X[0;0YTerminal[133X[101X
+  
+  [33X[0;0YWe  can  think  of the [13Xterminal[113X as a finite grid of cells each indexed by an
+  [10X(x,  y)[110X-coordinate  and assigned a single character. The [13Xcursor[113X is an object
+  that  occupies  the  space  of  exactly one cell. We are able to perform the
+  following actions:[133X
+  
+  [30X    [33X[0;6Ymove the cursor to an adjacent cell[133X
+  
+  [30X    [33X[0;6Yoverwrite the character of the cell occupied by the cursor[133X
+  
+  [33X[0;0YThe coordinate [10X(1, 1)[110X denotes the cell in the terminal where the usual [10XPrint[110X
+  command  would  start to write a character, i.e. the initial position of the
+  cursor  after hitting the [21Xenter key[121X on the gap prompt. We think of this cell
+  as  the  top left corner of the space that we reserve to print the progress.
+  Increasing  the  [10Xx[110X-coordinate  can  be  understood as movement to the right,
+  whereas increasing the [10Xy[110X-coordinate as movement to the bottom.[133X
+  
+  
+  [1X4.2 [33X[0;0YBlock[133X[101X
+  
+  [33X[0;0YA  [13Xblock[113X is a virtually allocated space in the terminal (see Section [14X4.1[114X) in
+  form  of a rectangle, a record [10Xrec(x, y, w, h)[110X, where the top left corner of
+  the  interior  is the cell at the coordinate [10X(x, y)[110X, the width is given by [10Xw[110X
+  and  the  height  by  [10Xh[110X, i.e. the bottom right corner of the interior is the
+  cell at the coordinate [10X(x + w - 1, y + h - 1)[110X.[133X
+  
+  [33X[0;0YFor  example  we  would  see  something akin to the following if we fill the
+  inside  of the block [10X(x := 3, y := 2, w := 5, h := 2)[110X with the symbols [21X[9XO[109X[121X and
+  use a simple dot [21X[9X.[109X[121X for the outside:[133X
+  
+  [4X[32X  Example  [32X[104X
+    [4X[28X..........[128X[104X
+    [4X[28X..OOOOO...[128X[104X
+    [4X[28X..OOOOO...[128X[104X
+    [4X[28X..........[128X[104X
+    [4X[28X..........[128X[104X
+  [4X[32X[104X
+  
+  
+  [1X4.3 [33X[0;0YPattern[133X[101X
+  
+  [33X[0;0YThe  main  purpose  of  a  [13Xpattern[113X  is  to  encode a coherent display of the
+  progress.  We  use  patterns  to  create  blocks in a structured and uniform
+  manner  of which a few special ones are defining bounds for printer modules.
+  The  progress  printer  has a [13Xpattern tree[113X whose nodes are patterns, records
+  that contain the following entries:[133X
+  
+  [8Xid[108X
+        [33X[0;6YUnique identifier string of the pattern.[133X
+  
+  [8Xparent[108X
+        [33X[0;6YA pattern or [10Xfail[110X.[133X
+  
+  [8Xchildren[108X
+        [33X[0;6YList of patterns.[133X
+  
+  [8XisActive[108X
+        [33X[0;6YA  function  that  takes  as  input  a process and returns whether the
+        branch starting in this pattern is active.[133X
+  
+  [8Xalignment[108X
+        [33X[0;6Y[9X"horizontal"[109X  all  blocks  created  from  children of this pattern are
+        aligned horizontally, i.e. they have equal [10Xy[110X-coordinates and heights.[133X
+  
+        [33X[0;6Y[9X"vertical"[109X  all  blocks  created  from  children  of  this pattern are
+        aligned vertically, i.e. they have equal [10Xx[110X-coordinates and widths.[133X
+  
+  [8Xsync[108X
+        [33X[0;6Y[9X["dim",  ...][109X  all  blocks created from this pattern have equal values
+        for the dimension [3Xdim[103X, etc.[133X
+  
+  [33X[0;0YIf  a  pattern  is  a  leaf node, it must additionally contain the following
+  entries:[133X
+  
+  [8Xprinter[108X
+        [33X[0;6YA printer module.[133X
+  
+  [8Xprinter_options[108X
+        [33X[0;6YAn options record for the printer.[133X
+  
+  
+  [1X4.3-1 [33X[0;0YCreating Blocks[133X[101X
+  
+  [33X[0;0YFor  each  process  we create blocks from the pattern tree using a recursive
+  strategy:    If    the   pattern   is   active   for   the   given   process
+  ([10Xpattern.isActive(process)  =  True[110X),  we  create  a block with the given id
+  (stored  in  [10Xprocess.blocks.id[110X) and apply the same strategy for all children
+  of the pattern.[133X
+  
+  [33X[0;0YA block created from the root of the pattern tree is called a [13Xprocess block[113X.
+  The width of a process block spans the whole terminal screen. Furthermore we
+  require that the process blocks are stacked from top to bottom following the
+  natural ordering of the process tree given by DFS (depth-first search).[133X
+  
+  [33X[0;0YA  block  created  from  an  inner  node  of  the  pattern  tree is called a
+  [13Xcomposition  block[113X.  The interior of such a block must be the disjoint union
+  of  the  interior  of  its  children,  and  either  the children are aligned
+  horizontally  within the block, or vertically. Visually speaking, we split a
+  composition  block  into  smaller  blocks  by  either using only vertical or
+  horizontal cuts.[133X
+  
+  [33X[0;0YA  block  created  from  a leaf node of the pattern tree is called a [13Xprinter
+  block[113X.  This  block  corresponds  to  a  printer  module  that is capable of
+  displaying  a  specific  information  about  the  current state of a process
+  inside the block bounds. (See [14X4.5[114X)[133X
+  
+  
+  [1X4.4 [33X[0;0YLayout[133X[101X
+  
+  [33X[0;0YThe [13Xlayout[113X is a record containing the following entries:[133X
+  
+  [8XSetup[108X
+        [33X[0;6YA  function  that setups the following entries of the progress printer
+        using the current options in [10XProgressPrinter.Options[110X:[133X
+  
+        [30X    [33X[0;12Y[10XProgressPrinter.Pattern[110X[133X
+  
+        [30X    [33X[0;12Y[10XProgressPrinter.InitialConfiguration[110X[133X
+  
+  [8XDefaultOptions[108X
+        [33X[0;6YThe default options record for [10XSetup[110X.[133X
+  
+  
+  [1X4.5 [33X[0;0YPrinter Module[133X[101X
+  
+  [33X[0;0YA  [13Xprinter module[113X is responsible for displaying a specific information about
+  the  current  state  of a process e.g. the number of completed iterations or
+  the  total  runtime.  Technically,  it  is  a  record  that must contain the
+  following  functions  as  entries  where  the argument [3Xoptions[103X must be valid
+  printer  options for this module. For a description of all available printer
+  modules, see Chapter [14X5[114X.[133X
+  
+  [1X4.5-1 dimensions[101X
+  
+  [33X[1;0Y[29X[2Xdimensions[102X( [3Xprocess[103X, [3Xoptions[103X ) [32X function[133X
+  
+  [33X[0;0YReturns  a  dimensions  record  [10Xrec(w,  h)[110X where the dimensions are positive
+  integers or [10Xfail[110X.[133X
+  
+  [33X[0;0YIf  the values are integers, they specify the smallest dimensions of a block
+  that  is  capable to display the information about the current state of this
+  process.[133X
+  
+  [33X[0;0YA value [10Xfail[110X indicates that the dimension is unspecified and can be replaced
+  by any arbitrary positive integer.[133X
+  
+  [1X4.5-2 generate[101X
+  
+  [33X[1;0Y[29X[2Xgenerate[102X( [3Xprocess[103X, [3Xid[103X, [3Xoptions[103X ) [32X function[133X
+  
+  [33X[0;0YDisplays  the  information  of  this process in the block with identifier [3Xid[103X
+  under  the  assumption  that  the  block contains no characters and is large
+  enough to display the information.[133X
+  
+  [33X[0;0YTherefore  the  printer  usually  needs  to write characters for most of the
+  interior of the block.[133X
+  
+  [1X4.5-3 update[101X
+  
+  [33X[1;0Y[29X[2Xupdate[102X( [3Xprocess[103X, [3Xid[103X, [3Xoptions[103X ) [32X function[133X
+  
+  [33X[0;0YDisplays  the  information  of  this process in the block with identifier [3Xid[103X
+  under  the  assumption  that  [10Xgenerate[110X  was  called beforehand and the block
+  bounds haven't changed since then.[133X
+  
+  [33X[0;0YTherefore the printer usually just updates a few characters in the terminal.[133X
+  
+  [33X[0;0YReturns  [10Xtrue[110X  if  it  is  capable  to display the information in the block,
+  otherwise [10Xfalse[110X.[133X
+  
+  
+  [1X4.6 [33X[0;0YImplementation[133X[101X
+  
+  [33X[0;0YThe  [13Xprogress  printer[113X, as described in the introduction of this chapter, is
+  implemented as a record that eventually contains the following entries:[133X
+  
+  [8XLayout[108X
+        [33X[0;6YA record [10Xrec(Setup, DefaultOptions)[110X for setting up a layout.[133X
+  
+  [8XRootProcess[108X
+        [33X[0;6YThe process tree containing the main process as the root.[133X
+  
+  [8XDimensions[108X
+        [33X[0;6YA record [10Xrec(w, h)[110X encoding the virtual bounds in the terminal.[133X
+  
+  [8XCursor[108X
+        [33X[0;6YA record [10Xrec(x, y)[110X encoding the cursor position.[133X
+  
+  [8XTimeStamp[108X
+        [33X[0;6YAn  internal  time  stamp  that  is  changed  whenever  a  process  is
+        refreshed.[133X
+  
+  [8XOptions[108X
+        [33X[0;6YThe current options record for [10XLayout.Setup[110X.[133X
+  
+  [8XPattern[108X
+        [33X[0;6YThe tree consisting of patterns.[133X
+  
+  [8XInitialConfiguration[108X
+        [33X[0;6YA  configuration  is  a  list  containing  entries  describing  linear
+        equations.  These  describe  additional  relations  between the blocks
+        created from the patterns of the layout.[133X
+  
+        [33X[0;6YAn  entry  is  of the form [10X[ factor, rec(id, param), ..., a ][110X which is
+        interpreted as [10Xfactor * id.param + ... = a[110X. Here, [10Xfactor[110X and [10Xa[110X must be
+        integers,  [10Xid[110X  the  identifier  of a pattern in the layout and [10Xparam[110X a
+        parameter of a block, i.e. either [10X"x"[110X, [10X"y"[110X, [10X"w"[110X or [10X"h"[110X.[133X
+  
+  [8XCurProcess[108X
+        [33X[0;6YThe process that is currently running.[133X
+  
+  
+  [1X4.7 [33X[0;0YProcess[133X[101X
+  
+  [33X[0;0YSee  Section  [14X2.1[114X  for the basic terminology. An abstract [13Xprocess[113X is encoded
+  via  a [13Xprocess record[113X, but we usually omit the distinction between them. The
+  record has the following entries:[133X
+  
+  [8Xid[108X
+        [33X[0;6YUnique identifier string of the process.[133X
+  
+  [8Xparent[108X
+        [33X[0;6YA process record or [10Xfail[110X.[133X
+  
+  [8Xchildren[108X
+        [33X[0;6YList of process records.[133X
+  
+  [8Xdepth[108X
+        [33X[0;6YThe  depth  is  a  non-negative  integer  showing  how far nested this
+        process  is in the root. The root has [10Xdepth = 0[110X. Any other process has
+        [10Xdepth = parent.depth + 1[110X.[133X
+  
+  [8XtotalTime[108X
+        [33X[0;6YTotal runtime of process up to the most recent refresh.[133X
+  
+  [8Xstatus[108X
+        [33X[0;6YThe  main  intent  is  to  mark  for the [10XRefreshProcess[110X command how to
+        update the total runtime of a process.[133X
+  
+        [33X[0;6YA [13Xpermanent[113X status is one that can last after a refresh:[133X
+  
+        [33X[0;6Y[9X"active"[109X, [9X"inactive"[109X, [9X"complete"[109X.[133X
+  
+        [33X[0;6YA  [13Xtemporary[113X  status is one that transforms immediately into a new one
+        after a refresh:[133X
+  
+        [33X[0;6Y[9X"started"[109X, [9X"stopped"[109X, [9X"terminated"[109X.[133X
+  
+        [33X[0;6YBelow  is  a  flow chart showcasing how each status can be transformed
+        into one another, given that [3XdoRefresh[103X is true. Therefore we only deal
+        with the commands [10XStartProcess[110X, [10XStopProcess[110X and [10XTerminateProcess[110X for a
+        permanent  status.  We ommit the arrows for those commands that do not
+        change the status.[133X
+  
+  
+             +----------+
+  +--------> |          |      Refresh
+  |          | inactive | <--------------+
+  +----------+          |                |
+    Refresh  +----+-----+                |
+                  |                      |
+                  | Start                |
+                  |                      |
+                  v                      |
+             +----------+                |
+             |          |                |
+             | started  |                |
+             |          |                |
+             +----+-----+                |
+                  |                      |
+                  | Refresh              |
+                  |                      |
+                  v                      |
+             +----------+          +-----+----+
+  +--------> |          |  Stop    |          |
+  |          |  active  +--------> | stopped  |
+  +----------+          |          |          |
+    Refresh  +----+-----+          +----------+
+                  |
+                  | Terminate
+                  |
+                  v
+             +----------+
+             |          |
+             |terminated|
+             |          |
+             +----+-----+
+                  |
+                  | Refresh
+                  |
+                  v
+             +----------+
+  +--------> |          |
+  |          | complete |
+  +----------+          |
+    Refresh  +----------+
+  
+        [33X[0;6YWe mention one edge case for completeness. If a process is defined via
+        an  iterator  that  doesn't  complete after [10XtotalSteps[110X, we change back
+        from  the  [10Xcomplete[110X status to the [10Xactive[110X status, and set [10XtotalSteps :=
+        infinity[110X and [10Xblocks := rec()[110X.[133X
+  
+  [8XcompletedSteps[108X
+        [33X[0;6YThe number of completed steps of a process. It is initialized with -1.
+        This indicates that the process hasn't started yet.[133X
+  
+  [8XtotalSteps[108X
+        [33X[0;6YNumber of comleted steps for a process to be marked as terminated.[133X
+  
+  [8Xcontent[108X
+        [33X[0;6YExtra  content of the process that may be used by the progress printer
+        or printer modules.[133X
+  
+  [8Xblocks[108X
+        [33X[0;6YA  record  containing  entries  [10Xid  :=  block[110X,  where  [10Xid[110X  is a string
+        corresponding to an id in the used pattern, and a [10Xblock[110X is a record of
+        the  form  [10Xrec(x,  y,  w,  h)[110X.  A printer block may be popullated with
+        additional entries by the corresponding printer module.[133X
+  
+  
+  [1X4.8 [33X[0;0YExample[133X[101X
+  
+  [33X[0;0YTODO[133X
+  

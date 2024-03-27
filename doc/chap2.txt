@@ -1,127 +1,207 @@
   
   [1X2 [33X[0;0YFunctions[133X[101X
   
-  [33X[0;0YHere we include a list of all functions that are provided to the User.[133X
+  [33X[0;0YHere we include a list of all functions that are provided to the [13Xuser[113X.[133X
+  
+  [33X[0;0YSee Chapter [14X1[114X for extensive examples on how to use these functions.[133X
   
   
-  [1X2.1 [33X[0;0YProcess Functions[133X[101X
+  [1X2.1 [33X[0;0YTerminology[133X[101X
   
-  [1X2.1-1 DeclareProcess[101X
+  [33X[0;0YAbstractly  speaking,  a  [13Xprocess[113X  is  a series of actions or steps taken in
+  order to achieve a particular end.[133X
   
-  [33X[1;0Y[29X[2XDeclareProcess[102X( [3XnrSteps[103X[, [3Xparent[103X, [3Xid[103X][, [3Xtitle[103X][, [3Xoptrec[103X] ) [32X function[133X
+  [33X[0;0YWe refer to steps by their position in the series. For technical reasons, we
+  add an artificial step [22X0[122X at the beginning of the series. Step [22X0[122X is completed
+  when the process starts.[133X
   
-  [33X[0;0YCall this function to declare a process.[133X
+  [33X[0;0YA  step  might be broken down into smaller steps, and thus we can think of a
+  step as a (sub-)process. In this case, we call the larger process the [13Xparent
+  (process)[113X  and  the  nested  (sub-)process  the [13Xchild (process)[113X. Therefore a
+  process  naturally induces a tree graph via the parent-child relations which
+  we call a [13Xprocess tree[113X.[133X
   
-  [33X[0;0YReturns the declared process. (see Chapter [14X1[114X for examples)[133X
+  [33X[0;0YThe  [13Xprogress[113X  of  a process is the measure how close we are to the end. The
+  process has [13Xterminated[113X when the end is reached.[133X
   
-  [33X[0;0YThe argument [3XnrSteps[103X indicates the number of steps needed for the process to
-  terminate.  If  just  called  with the argument [3XnrSteps[103X, the process will be
-  declared as the root and be given an automatic id.[133X
+  [33X[0;0YDisplaying  the  progress  of  a process means that we only show information
+  about  the  current  state  of  the  process,  whilst  removing  all  visual
+  references to the past states.[133X
   
-  [33X[0;0YThe  optional  argument  [3Xparent[103X  must  either  be  a  process record, the id
-  (string) of a valid process, or [10Xfail[110X to declare the process as the root.[133X
+  [33X[0;0YA  change of one step to the next is called the [13Xprogression[113X of a process. We
+  update   the   display   on   the   terminal  screen  for  each  progression
+  automatically.[133X
   
-  [33X[0;0YThe optional argument [3Xid[103X must be a unique string for the process.[133X
-  
-  [33X[0;0YThe  optional  argument  [3Xtitle[103X  must  be a string or [10Xfail[110X. If specified, the
-  title will be printed in the progress bar.[133X
-  
-  [33X[0;0YThe optional argument [3Xoptrec[103X must be a record with components that are valid
-  display options. (see [14X2.2[114X)[133X
-  
-  [1X2.1-2 StartProcess[101X
-  
-  [33X[1;0Y[29X[2XStartProcess[102X( [3Xprocess[103X ) [32X function[133X
-  [33X[1;0Y[29X[2XStartProcess[102X( [3XnrSteps[103X[, [3Xparent[103X, [3Xid[103X][, [3Xtitle[103X][, [3Xoptrec[103X] ) [32X function[133X
-  
-  [33X[0;0YCall  this  function  before the start of a process. (For example exactly in
-  the line above the [10Xfor[110X keyword in a loop)[133X
-  
-  [33X[0;0YReturns the started process (see Chapter [14X1[114X for examples)[133X
-  
-  [33X[0;0YIf  the  process  has already been declared, one can call this function with
-  only  one  argument [3Xprocess[103X, which must be either a process record or the id
-  (string)  of  a  valid  process.  Otherwise one has to use the function with
-  arguments as specified in [2XDeclareProcess[102X ([14X2.1-1[114X) to declare the process.[133X
-  
-  [1X2.1-3 UpdateProcess[101X
-  
-  [33X[1;0Y[29X[2XUpdateProcess[102X(  ) [32X function[133X
-  [33X[1;0Y[29X[2XUpdateProcess[102X( [3Xprocess[103X[, [3Xtitle[103X][, [3Xoptrec[103X] ) [32X function[133X
-  
-  [33X[0;0YCall  this  function at the end of a step of the given process. (For example
-  exactly in the line above the [10Xod;[110X keyword in a loop)[133X
-  
-  [33X[0;0YReturns the updated process (see Chapter [14X1[114X for examples)[133X
-  
-  [33X[0;0YThe  optional  argument  [3Xprocess[103X  must  either be a process record or the id
-  (string) of a valid process.[133X
-  
-  [33X[0;0YIf  not  specified,  [3Xprocess[103X  will  be set to the root process. The optional
-  argument  [3Xtitle[103X  must  be  string  or  [10Xfail[110X.  If specified, the title of the
-  process gets updated and will be printed in the prograss bar.[133X
-  
-  [33X[0;0YThe optional argument [3Xoptrec[103X must be a record with components that are valid
-  display options. (see Section [14X2.2[114X)[133X
+  [33X[0;0YThis  package  displays  the  progress of exactly one main process, which we
+  call the [13Xroot (process)[113X.[133X
   
   
-  [1X2.2 [33X[0;0YDisplay Options[133X[101X
+  [1X2.2 [33X[0;0YProcess Functions[133X[101X
   
-  [33X[0;0YThe methods [11XDeclareProcess[111X, [11XStartProcess[111X and [11XUpdateProcess[111X allow an optional
-  argument  [3Xoptrec[103X  which must be a record and modifies the display output for
-  the execution of only this single command.[133X
+  [33X[0;0YHere  we include a list of all functions related to creating and modifying a
+  process.[133X
   
-  [33X[0;0YFor  modifying  the display output globally for all subsequent executions of
-  the above functions see [2XSetDisplayOptionsForProgressBar[102X ([14X2.2-2[114X).[133X
+  [1X2.2-1 ProcessIterator[101X
   
-  [33X[0;0YThe following components of [3Xoptrec[103X are supported.[133X
+  [33X[1;0Y[29X[2XProcessIterator[102X( [3XiterLike[103X[, [3Xid[103X[, [3Xparent[103X]][, [3Xcontent[103X] ) [32X function[133X
   
-  [8X[10XprintTotalTime[110X[8X[108X
-        [33X[0;6Y[9Xtrue[109X to print total time (of root process).[133X
+  [33X[0;0YReturns  an  iterator that behaves the same way as [3XiterLike[103X and displays the
+  progression of the iteration in the terminal, see Chapter [14X1[114X for examples.[133X
   
-        [33X[0;6Y[9Xfalse[109X to suppress total time. [13XDEFAULT[113X[133X
+  [33X[0;0YThe  argument  [3XiterLike[103X  must  be either in the filter [10XIsListOrCollection[110X or
+  [10XIsIterator[110X,  or be a record with entries [10X(iter, totalSteps)[110X where [10Xiter[110X is in
+  the  filter [10XIsIterator[110X and [10XtotalSteps[110X is the number of times we have to call
+  [10XNextIterator[110X until [10XIsDoneIterator[110X returns [10Xtrue[110X.[133X
   
-  [8X[10XprintETA[110X[8X[108X
-        [33X[0;6Y[9Xtrue[109X to print eta (expected time of arrival/completion). [13XDEFAULT[113X[133X
+  [33X[0;0YThe optional argument [3Xid[103X must be a unique string identifier for the process.
+  If no [3Xid[103X is provided, this process is assigned a random identifier.[133X
   
-        [33X[0;6Y[9Xfalse[109X to suppress eta.[133X
+  [33X[0;0YThe  optional  argument  [3Xparent[103X must either be a process iterator, a process
+  record,  the  id  of  a valid process, or [10Xfail[110X to declare the process as the
+  root.  If  no  [3Xparent[103X  is  set,  the parent is set automatically to the most
+  recent active process.[133X
   
-  [8X[10XremoveChildren[110X[8X[108X
-        [33X[0;6Y[9Xtrue[109X to remove child process after its termination. [13XDEFAULT[113X[133X
+  [33X[0;0YThe  optional  argument  [3Xcontent[103X  must be a record, that contains additional
+  information for the printer, possibly about the progress of the process, see
+  Chapter [14X4[114X.[133X
   
-        [33X[0;6Y[9Xfalse[109X to keep child process after its termination.[133X
+  [1X2.2-2 SetProcess[101X
   
-  [8X[10XhighlightCurStep[110X[8X[108X
-        [33X[0;6Y[9Xtrue[109X to highlight current process.[133X
+  [33X[1;0Y[29X[2XSetProcess[102X( [3XtotalSteps[103X[, [3Xid[103X[, [3Xparent[103X]][, [3Xcontent[103X] ) [32X function[133X
   
-        [33X[0;6Y[9Xfalse[109X to suppress highlighting. [13XDEFAULT[113X[133X
+  [33X[0;0YReturns a (new) process whose parameters are set to the given arguments, see
+  Chapter [14X1[114X for examples.[133X
   
-  [8X[10XhighlightColor[110X[8X[108X
-        [33X[0;6Y[9X"red"[109X for higlighting in red color. [13XDEFAULT[113X[133X
+  [33X[0;0YThe argument [3XtotalSteps[103X indicates the number of steps needed for the process
+  to terminate. May be set to [10Xinfinity[110X if the number of steps is not known. In
+  this  case,  the  process has to be terminated manually via [2XTerminateProcess[102X
+  ([14X2.2-7[114X).[133X
   
-        [33X[0;6Y[9X"blue"[109X for higlighting in blue color.[133X
+  [33X[0;0YFor  the  specifications  and  default  values  of  the other arguments, see
+  [2XProcessIterator[102X ([14X2.2-1[114X).[133X
   
-  [1X2.2-1 DisplayOptionsForProgressBar[101X
+  [33X[0;0YIf  a process with the given [3Xid[103X under [3Xparent[103X already exists, this resets the
+  process  and  sets [3XtotalSteps[103X and [3Xcontent[103X to the given arguments afterwards,
+  see [2XResetProcess[102X ([14X2.2-8[114X).[133X
   
-  [33X[1;0Y[29X[2XDisplayOptionsForProgressBar[102X(  ) [32X function[133X
+  [33X[0;0YOtherwise  this  creates  a  new process under [3Xparent[103X with identifier [3Xid[103X. In
+  particular  if  the  parent  is  set  to [10Xfail[110X, this will always create a new
+  process and set it as the root.[133X
   
-  [33X[0;0Yprints the current global display options for progress bar.[133X
+  [1X2.2-3 RefreshProcess[101X
   
-  [1X2.2-2 SetDisplayOptionsForProgressBar[101X
+  [33X[1;0Y[29X[2XRefreshProcess[102X( [3Xprocess[103X ) [32X function[133X
   
-  [33X[1;0Y[29X[2XSetDisplayOptionsForProgressBar[102X( [3Xoptrec[103X ) [32X function[133X
+  [33X[0;0YThis function updates the timers of the process and displays the progress in
+  the terminal.[133X
   
-  [33X[0;0Ysets the current global display options for progress bar.[133X
+  [33X[0;0YThe argument [3Xprocess[103X must either be a process iterator, a process record, or
+  the id of a valid process.[133X
   
-  [33X[0;0YThe  argument [3Xoptrec[103X must be a record with components that are valid display
-  options. (see [14X2.2[114X) The components for the current global display options are
-  set to the values specified by the components in [3Xoptrec[103X.[133X
+  [1X2.2-4 UpdateProcess[101X
   
-  [1X2.2-3 ResetDisplayOptionsForProgressBar[101X
+  [33X[1;0Y[29X[2XUpdateProcess[102X( [3Xprocess[103X[, [3Xcontent[103X[, [3XdoRefresh[103X]] ) [32X function[133X
   
-  [33X[1;0Y[29X[2XResetDisplayOptionsForProgressBar[102X(  ) [32X function[133X
+  [33X[0;0YThis  function progresses the process. Call this function at the end of each
+  step, see Chapter [14X1[114X for examples.[133X
   
-  [33X[0;0Yresets the current global display options for progress bar to default.[133X
+  [33X[0;0YThe argument [3Xprocess[103X must either be a process iterator, a process record, or
+  the id of a valid process.[133X
   
-  [33X[0;0Y [133X
+  [33X[0;0YThe   optional   argument   [3XdoRefresh[103X   is   a  boolean  indicating  whether
+  [2XRefreshProcess[102X  ([14X2.2-3[114X)  should  be  called afterwards. It is set to [10Xtrue[110X by
+  default.[133X
+  
+  [33X[0;0YFor  the  specifications  and default values of [3Xcontent[103X, see [2XProcessIterator[102X
+  ([14X2.2-1[114X).[133X
+  
+  [1X2.2-5 StartProcess[101X
+  
+  [33X[1;0Y[29X[2XStartProcess[102X( [3Xprocess[103X[, [3XdoRefresh[103X] ) [32X function[133X
+  
+  [33X[0;0YThis function starts/resumes the timing of [3Xprocess[103X and all its descendants.[133X
+  
+  [33X[0;0YFor   the   specifications   and   default  values  of  the  arguments,  see
+  [2XUpdateProcess[102X ([14X2.2-4[114X).[133X
+  
+  [1X2.2-6 StopProcess[101X
+  
+  [33X[1;0Y[29X[2XStopProcess[102X( [3Xprocess[103X[, [3XdoRefresh[103X] ) [32X function[133X
+  
+  [33X[0;0YThis function stops the timing of [3Xprocess[103X and all its descendants.[133X
+  
+  [33X[0;0YFor   the   specifications   and   default  values  of  the  arguments,  see
+  [2XUpdateProcess[102X ([14X2.2-4[114X).[133X
+  
+  [1X2.2-7 TerminateProcess[101X
+  
+  [33X[1;0Y[29X[2XTerminateProcess[102X( [3Xprocess[103X[, [3XdoRefresh[103X] ) [32X function[133X
+  
+  [33X[0;0YThis function terminates [3Xprocess[103X and all its descendants.[133X
+  
+  [33X[0;0YFor   the   specifications   and   default  values  of  the  arguments,  see
+  [2XUpdateProcess[102X ([14X2.2-4[114X).[133X
+  
+  [1X2.2-8 ResetProcess[101X
+  
+  [33X[1;0Y[29X[2XResetProcess[102X( [3Xprocess[103X[, [3XdoRefresh[103X] ) [32X function[133X
+  
+  [33X[0;0YThis function resets [3Xprocess[103X and all its descendants to the initial state.[133X
+  
+  [33X[0;0YFor   the   specifications   and   default  values  of  the  arguments,  see
+  [2XUpdateProcess[102X ([14X2.2-4[114X).[133X
+  
+  
+  [1X2.3 [33X[0;0YDisplay[133X[101X
+  
+  [33X[0;0YHere we include a list of all functions related to the display.[133X
+  
+  [1X2.3-1 SetLayout[101X
+  
+  [33X[1;0Y[29X[2XSetLayout[102X( [3Xlayout[103X ) [32X function[133X
+  
+  [33X[0;0YSets the layout of the progress printer.[133X
+  
+  [33X[0;0YSee Chapter [14X3[114X for a list of available layouts.[133X
+  
+  [1X2.3-2 LayoutOptions[101X
+  
+  [33X[1;0Y[29X[2XLayoutOptions[102X(  ) [32X function[133X
+  
+  [33X[0;0YPrints the layout options of the progress printer.[133X
+  
+  [1X2.3-3 SetLayoutOptions[101X
+  
+  [33X[1;0Y[29X[2XSetLayoutOptions[102X( [3Xoptrec[103X ) [32X function[133X
+  
+  [33X[0;0YSets the layout options of the progress printer.[133X
+  
+  [33X[0;0YThe  argument [3Xoptrec[103X must be a record with components that are valid options
+  for the current layout, see Chapter [14X3[114X. The components for the layout options
+  are set to the values specified by the components in [3Xoptrec[103X.[133X
+  
+  [1X2.3-4 ResetLayoutOptions[101X
+  
+  [33X[1;0Y[29X[2XResetLayoutOptions[102X(  ) [32X function[133X
+  
+  [33X[0;0YResets the layout options of the progress printer to default.[133X
+  
+  
+  [1X2.3-5 [33X[0;0YColor And Style[133X[101X
+  
+  [33X[0;0YSome  layout  options  allow to set a color or a style. The available colors
+  and styles are listed below.[133X
+  
+  [8X[10XColor[110X[8X[108X
+        [33X[0;6Y[9X"default"[109X  is  the default printing color of your terminal. This color
+        might  dynamically  change  depending  on  your  local  settings  like
+        nightmode.[133X
+  
+        [33X[0;6Y[9Xother: [109X[133X
+  
+  [8X[10XStyle[110X[8X[108X
+        [33X[0;6Y[9X"default"[109X  is  the  default  printing  style of your terminal, usually
+        roman.[133X
+  
+        [33X[0;6Y[9Xother: [109X[133X
   

@@ -7,10 +7,10 @@
                                    terminal. [101X
   
   
-                                      0.3
+                                      0.4
   
   
-                                22 February 2023
+                                 27 March 2024
   
   
                                 Friedrich Rober
@@ -27,18 +27,48 @@
   
   1 [33X[0;0YIntroduction[133X
     1.1 [33X[0;0YExample: Loop[133X
-    1.2 [33X[0;0YExample: Process with Steps[133X
-    1.3 [33X[0;0YExample: Nested Loop[133X
-    1.4 [33X[0;0YExample: Tree[133X
+    1.2 [33X[0;0YExample: Indefinite Loop[133X
+    1.3 [33X[0;0YExample: Printing Values[133X
+    1.4 [33X[0;0YExample: Nested Loop[133X
+    1.5 [33X[0;0YExample: Tree[133X
+    1.6 [33X[0;0YExample: Table[133X
+    1.7 [33X[0;0YExample: Stopping[133X
   2 [33X[0;0YFunctions[133X
-    2.1 [33X[0;0YProcess Functions[133X
-      2.1-1 DeclareProcess
-      2.1-2 StartProcess
-      2.1-3 UpdateProcess
-    2.2 [33X[0;0YDisplay Options[133X
-      2.2-1 DisplayOptionsForProgressBar
-      2.2-2 SetDisplayOptionsForProgressBar
-      2.2-3 ResetDisplayOptionsForProgressBar
+    2.1 [33X[0;0YTerminology[133X
+    2.2 [33X[0;0YProcess Functions[133X
+      2.2-1 ProcessIterator
+      2.2-2 SetProcess
+      2.2-3 RefreshProcess
+      2.2-4 UpdateProcess
+      2.2-5 StartProcess
+      2.2-6 StopProcess
+      2.2-7 TerminateProcess
+      2.2-8 ResetProcess
+    2.3 [33X[0;0YDisplay[133X
+      2.3-1 SetLayout
+      2.3-2 LayoutOptions
+      2.3-3 SetLayoutOptions
+      2.3-4 ResetLayoutOptions
+      2.3-5 [33X[0;0YColor And Style[133X
+  3 [33X[0;0YLayouts[133X
+    3.1 [33X[0;0YStandard Layout[133X
+    3.2 [33X[0;0YTree Layout[133X
+    3.3 [33X[0;0YTable Layout[133X
+  4 [33X[0;0YProgress Printer[133X
+    4.1 [33X[0;0YTerminal[133X
+    4.2 [33X[0;0YBlock[133X
+    4.3 [33X[0;0YPattern[133X
+      4.3-1 [33X[0;0YCreating Blocks[133X
+    4.4 [33X[0;0YLayout[133X
+    4.5 [33X[0;0YPrinter Module[133X
+      4.5-1 dimensions
+      4.5-2 generate
+      4.5-3 update
+    4.6 [33X[0;0YImplementation[133X
+    4.7 [33X[0;0YProcess[133X
+    4.8 [33X[0;0YExample[133X
+  5 [33X[0;0YPrinter Modules[133X
+    5.1 [33X[0;0YTreeBranches Printer[133X
   
   
   [32X

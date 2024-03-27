@@ -1,0 +1,57 @@
+  
+  [1X3 [33X[0;0YLayouts[133X[101X
+  
+  [33X[0;0YHere we include a list of all layouts.[133X
+  
+  [33X[0;0YAn  abstract  [13Xlayout[113X defines a style for displaying the progress. This style
+  can be modified via certain layout options.[133X
+  
+  [33X[0;0YSee Section [14X4.4[114X for a technical in-depth explanation.[133X
+  
+  
+  [1X3.1 [33X[0;0YStandard Layout[133X[101X
+  
+  [33X[0;0YThis  is  the  default  layout  used  by  the progress printer. It is a more
+  user-friendly limited version of the tree layout.[133X
+  
+  [8X[10XprintID[110X[8X[108X
+        [33X[0;6Y[9Xtrue[109X to print id of process in the header.[133X
+  
+        [33X[0;6Y[9Xfalse[109X to suppress id printing. [13X[22X←[122X DEFAULT[113X[133X
+  
+  [8X[10XprintTotalTime[110X[8X[108X
+        [33X[0;6Y[9Xtrue[109X to print total time in the header of the root. [13X[22X←[122X DEFAULT[113X[133X
+  
+        [33X[0;6Y[9Xfalse[109X to suppress total time.[133X
+  
+  [8X[10XprintETA[110X[8X[108X
+        [33X[0;6Y[9Xtrue[109X  to print eta (expected time of arrival/completion) in the header
+        of the root.[133X
+  
+        [33X[0;6Y[9Xfalse[109X to suppress eta. [13X[22X←[122X DEFAULT[113X[133X
+  
+  [8X[10XhighlightCurStep[110X[8X[108X
+        [33X[0;6Y[9Xtrue[109X to highlight current process. [13X[22X←[122X DEFAULT[113X[133X
+  
+        [33X[0;6Y[9Xfalse[109X to suppress highlighting.[133X
+  
+  [8X[10XhighlightColor[110X[8X[108X
+        [33X[0;6Y[9X"red"[109X [13X[22X←[122X DEFAULT[113X[133X
+  
+        [33X[0;6YSee [14X2.3-5[114X for available colors.[133X
+  
+  [8X[10XhighlightStyle[110X[8X[108X
+        [33X[0;6Y[9X"default"[109X [13X[22X←[122X DEFAULT[113X[133X
+  
+        [33X[0;6YSee [14X2.3-5[114X for available styles.[133X
+  
+  
+  [1X3.2 [33X[0;0YTree Layout[133X[101X
+  
+  [33X[0;0YTODO[133X
+  
+  
+  [1X3.3 [33X[0;0YTable Layout[133X[101X
+  
+  [33X[0;0YTODO[133X
+  

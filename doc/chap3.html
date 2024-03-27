@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>GAP (ProgressBar) - Chapter 3: Layouts</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="GAPDoc2HTML" />
+<link rel="stylesheet" type="text/css" href="manual.css" />
+<script src="manual.js" type="text/javascript"></script>
+<script type="text/javascript">overwriteStyle();</script>
+</head>
+<body class="chap3"  onload="jscontent()">
+<link rel="stylesheet" type="text/css" href="style/style.css" />
+
+
+<div class="chlinktop"><span class="chlink1">Goto Chapter: </span><a href="chap0.html">Top</a>  <a href="chap1.html">1</a>  <a href="chap2.html">2</a>  <a href="chap3.html">3</a>  <a href="chap4.html">4</a>  <a href="chap5.html">5</a>  <a href="chapInd.html">Ind</a>  </div>
+
+<div class="chlinkprevnexttop">&nbsp;<a href="chap0.html">[Top of Book]</a>&nbsp;  <a href="chap0.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap2.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chap4.html">[Next Chapter]</a>&nbsp;  </div>
+
+<p id="mathjaxlink" class="pcenter"><a href="chap3_mj.html">[MathJax on]</a></p>
+<p><a id="X863BD5DB7D767DD3" name="X863BD5DB7D767DD3"></a></p>
+<div class="ChapSects"><a href="chap3.html#X863BD5DB7D767DD3">3 <span class="Heading">Layouts</span></a>
+<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap3.html#X7D7826EA80BFC44F">3.1 <span class="Heading">Standard Layout</span></a>
+</span>
+</div>
+<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap3.html#X7CB550F0848454E8">3.2 <span class="Heading">Tree Layout</span></a>
+</span>
+</div>
+<div class="ContSect"><span class="tocline"><span class="nocss">&nbsp;</span><a href="chap3.html#X8547EA05792B2051">3.3 <span class="Heading">Table Layout</span></a>
+</span>
+</div>
+</div>
+
+<h3>3 <span class="Heading">Layouts</span></h3>
+
+<p>Here we include a list of all layouts.</p>
+
+<p>An abstract <em>layout</em> defines a style for displaying the progress. This style can be modified via certain layout options.</p>
+
+<p>See Section <a href="chap4.html#X7BB31676791CF4E5"><span class="RefLink">4.4</span></a> for a technical in-depth explanation.</p>
+
+<p><a id="X7D7826EA80BFC44F" name="X7D7826EA80BFC44F"></a></p>
+
+<h4>3.1 <span class="Heading">Standard Layout</span></h4>
+
+<p>This is the default layout used by the progress printer. It is a more user-friendly limited version of the tree layout.</p>
+
+
+<dl>
+<dt><strong class="Mark"><code class="code">printID</code></strong></dt>
+<dd><p><code class="keyw">true</code> to print id of process in the header.</p>
+
+<p><code class="keyw">false</code> to suppress id printing. <em><span class="SimpleMath">←</span> DEFAULT</em></p>
+
+</dd>
+<dt><strong class="Mark"><code class="code">printTotalTime</code></strong></dt>
+<dd><p><code class="keyw">true</code> to print total time in the header of the root. <em><span class="SimpleMath">←</span> DEFAULT</em></p>
+
+<p><code class="keyw">false</code> to suppress total time.</p>
+
+</dd>
+<dt><strong class="Mark"><code class="code">printETA</code></strong></dt>
+<dd><p><code class="keyw">true</code> to print eta (expected time of arrival/completion) in the header of the root.</p>
+
+<p><code class="keyw">false</code> to suppress eta. <em><span class="SimpleMath">←</span> DEFAULT</em></p>
+
+</dd>
+<dt><strong class="Mark"><code class="code">highlightCurStep</code></strong></dt>
+<dd><p><code class="keyw">true</code> to highlight current process. <em><span class="SimpleMath">←</span> DEFAULT</em></p>
+
+<p><code class="keyw">false</code> to suppress highlighting.</p>
+
+</dd>
+<dt><strong class="Mark"><code class="code">highlightColor</code></strong></dt>
+<dd><p><code class="keyw">"red"</code> <em><span class="SimpleMath">←</span> DEFAULT</em></p>
+
+<p>See <a href="chap2.html#X79CDA0B77AD197D0"><span class="RefLink">2.3-5</span></a> for available colors.</p>
+
+</dd>
+<dt><strong class="Mark"><code class="code">highlightStyle</code></strong></dt>
+<dd><p><code class="keyw">"default"</code> <em><span class="SimpleMath">←</span> DEFAULT</em></p>
+
+<p>See <a href="chap2.html#X79CDA0B77AD197D0"><span class="RefLink">2.3-5</span></a> for available styles.</p>
+
+</dd>
+</dl>
+<p><a id="X7CB550F0848454E8" name="X7CB550F0848454E8"></a></p>
+
+<h4>3.2 <span class="Heading">Tree Layout</span></h4>
+
+<p>TODO</p>
+
+<p><a id="X8547EA05792B2051" name="X8547EA05792B2051"></a></p>
+
+<h4>3.3 <span class="Heading">Table Layout</span></h4>
+
+<p>TODO</p>
+
+
+<div class="chlinkprevnextbot">&nbsp;<a href="chap0.html">[Top of Book]</a>&nbsp;  <a href="chap0.html#contents">[Contents]</a>&nbsp;  &nbsp;<a href="chap2.html">[Previous Chapter]</a>&nbsp;  &nbsp;<a href="chap4.html">[Next Chapter]</a>&nbsp;  </div>
+
+
+<div class="chlinkbot"><span class="chlink1">Goto Chapter: </span><a href="chap0.html">Top</a>  <a href="chap1.html">1</a>  <a href="chap2.html">2</a>  <a href="chap3.html">3</a>  <a href="chap4.html">4</a>  <a href="chap5.html">5</a>  <a href="chapInd.html">Ind</a>  </div>
+
+<hr />
+<p class="foot">generated by <a href="http://www.math.rwth-aachen.de/~Frank.Luebeck/GAPDoc">GAPDoc2HTML</a></p>
+</body>
+</html>
