@@ -25,8 +25,8 @@ SetPackageInfo( rec(
 
 PackageName := "ProgressBar",
 Subtitle := "The GAP package ProgressBar displays the progression of an iteration in the terminal.",
-Version := "0.4dev",
-Date := "22/02/2023", # dd/mm/yyyy format
+Version := "0.4",
+Date := "27/03/2024", # dd/mm/yyyy format
 License := "GPL-2.0-or-later",
 
 Persons := [
