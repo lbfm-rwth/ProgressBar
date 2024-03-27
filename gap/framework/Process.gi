@@ -112,15 +112,35 @@ BindGlobal("PB_GetProcess", function(procObj)
 	return process;
 end);
 
+# args can be one of the following:
+# totalSteps
+# totalSteps, content
+# totalSteps, id
+# totalSteps, id, content
+# totalSteps, id, parent
+# totalSteps, id, parent, content
 InstallGlobalFunction("SetProcess", function(args...)
-	local totalSteps, id, parent, content, process, child, pos;
+	local totalSteps, n, r, id, parent, autoParent, content, process, child, pos;
 
 	# process arguments
 	totalSteps := args[1];
 	if not (IsPosInt(totalSteps) or IsInfinity(totalSteps)) then
 		Error("totalSteps is not a positive integer or infinity");
 	fi;
-	if Length(args) >= 2 then
+
+	# check if last argument is content
+	n := Length(args);
+	r := args[n];
+	# we need to check that is not a process record
+	if IsRecord(r) and not IsBound(r.totalTime) then
+		content := r;
+		n := n - 1;
+	else
+		content := rec();
+	fi;
+
+	# now before content, there might be an id, or an id and a parent
+	if n >= 2 then
 		id := args[2];
 		if not IsString(id) then
 			Error("id must be a string");
@@ -128,18 +148,15 @@ InstallGlobalFunction("SetProcess", function(args...)
 	else
 		id := List([1 .. 16], i -> PseudoRandom("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"));
 	fi;
-	if Length(args) >= 3 then
+	if n >= 3 then
 		parent := PB_GetProcess(args[3]);
+		autoParent := false;
 	else
 		parent := ProgressPrinter.CurProcess;
 		while parent <> fail and parent.status = "complete" do
 			parent := parent.parent;
 		od;
-	fi;
-	if Length(args) >= 4 then
-		content := args[4];
-	else
-		content := rec();
+		autoParent := true;
 	fi;
 
 	# create process
@@ -161,7 +178,7 @@ InstallGlobalFunction("SetProcess", function(args...)
 		PB_StartProgressPrinter(process);
 	else
 		pos := PositionProperty(parent.children, proc -> proc.id = id);
-		if pos = fail then
+		if autoParent and pos = fail then
 			pos := PositionProperty(parent.children, proc -> proc.completedSteps = -1);
 		fi;
 		if pos = fail then
