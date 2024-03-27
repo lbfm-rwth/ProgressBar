@@ -118,7 +118,7 @@ DeclareGlobalFunction( "ResetLayoutOptions" );
 ##   The optional argument <A>parent</A> must either be a process iterator,
 ##   a process record, the id of a valid process,
 ##   or <C>fail</C> to declare the process as the root.
-##   If no <A>parent<A> is set, the parent is set automatically
+##   If no <A>parent</A> is set, the parent is set automatically
 ##   to the most recent active process. <P/>
 ##   The optional argument <A>content</A> must be a record,
 ##   that contains additional information for the printer,
