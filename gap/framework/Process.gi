@@ -125,7 +125,7 @@ InstallGlobalFunction("SetProcess", function(args...)
 
 	# process arguments
 	totalSteps := args[1];
-	if not (IsPosInt(totalSteps) or IsInfinity(totalSteps)) then
+	if not (totalSteps = 0 or IsPosInt(totalSteps) or IsInfinity(totalSteps)) then
 		Error("totalSteps is not a positive integer or infinity");
 	fi;
 
