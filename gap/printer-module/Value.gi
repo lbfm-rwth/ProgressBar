@@ -117,6 +117,9 @@ PB_ValuePrinter.update := function(process, id, options)
         return true;
     fi;
     block := process.blocks.(id);
+    if not IsBound(block.value) then
+        return true;
+    fi;
 	if IsBound(process.value) then
         value := String(block.func(process.value));
     else
