@@ -104,7 +104,7 @@ TreeLayout.Pattern := function(pattern, options, name)
 			text := options.separator,
 		);
 	fi;
-	if options.highlightCurStep and name in ["bar", "ratio", "sep"] then
+	if options.highlightCurStep and name in ["bar", "value", "ratio", "sep"] then
 		pattern.printer := PB_HighlightPrinter;
 		pattern.printer_options := rec(
 			highlightColor := options.highlightColor,

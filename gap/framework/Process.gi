@@ -346,6 +346,9 @@ InstallGlobalFunction("StartProcess", function(args...)
 end);
 
 InstallGlobalFunction("TerminateProcess", function(args...)
+	if Length(args) = 0 then
+		args := [ProgressPrinter.RootProcess];
+	fi;
 	PB_SetStatus("inactive", "complete", [args[1], false]);
 	PB_SetStatus("active", "terminated", args);
 end);
