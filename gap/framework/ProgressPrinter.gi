@@ -40,6 +40,7 @@ InstallValue(ProgressPrinter, rec(
 	Pattern := fail,
 	InitialConfiguration := fail,
 	CurProcess := fail,
+	IsActive := true,
 ));
 
 InstallGlobalFunction("SetLayout", function(layout)
@@ -117,7 +118,7 @@ end);
 
 InstallGlobalFunction("PB_SetupBlocks", function(process, pattern)
 	local block, child;
-	if pattern.isActive(process) then
+	if pattern.isIsActive(process) then
 		if not IsBound(process.blocks.(pattern.id)) then
 			process.blocks.(pattern.id) := rec();
 		fi;
@@ -144,7 +145,7 @@ end);
 # set bounding box of block
 InstallGlobalFunction("PB_SetBounds", function(process, pattern, values)
 	local bounds, param, i, child;
-	if not pattern.isActive(process) then
+	if not pattern.isIsActive(process) then
 		return;
 	fi;
 	bounds := PB_GetBounds(process, pattern);
@@ -175,7 +176,7 @@ InstallGlobalFunction("PB_SetupDimensionsConfiguration", function(process, patte
 	desyncronized := false;
 	# inner node
 	if not IsEmpty(pattern.children) then
-		children := Filtered(pattern.children, child -> child.isActive(process));
+		children := Filtered(pattern.children, child -> child.isIsActive(process));
 		for child in children do
 			desyncronized := desyncronized or PB_SetupDimensionsConfiguration(process, child);
 		od;
@@ -248,12 +249,12 @@ end);
 
 InstallGlobalFunction("PB_SetupAlignmentConfiguration", function(process, pattern)
 	local c, children, child, i, coord, dir;
-	if not pattern.isActive(process) then
+	if not pattern.isIsActive(process) then
 		return;
 	fi;
 	# inner node
 	if not IsEmpty(pattern.children) then
-		children := Filtered(pattern.children, child -> child.isActive(process));
+		children := Filtered(pattern.children, child -> child.isIsActive(process));
 		# child dimensions sum up to node dimension for dir
 		if pattern.alignment = "horizontal" then
 			dir := "w";
@@ -376,7 +377,7 @@ end);
 InstallGlobalFunction("PB_PrintBlock", function(process, pattern, doGenerate)
 	local child;
 	# activity has changed
-	if pattern.isActive(process) then
+	if pattern.isIsActive(process) then
 		if not IsBound(process.blocks.(pattern.id)) then
 			return false;
 		fi;
@@ -386,7 +387,7 @@ InstallGlobalFunction("PB_PrintBlock", function(process, pattern, doGenerate)
 		fi;
 	fi;
 
-	if not pattern.isActive(process) then
+	if not pattern.isIsActive(process) then
 		return true;
 	fi;
 
