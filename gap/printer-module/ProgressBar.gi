@@ -75,7 +75,11 @@ PB_ProgressBarPrinter.generate := function(process, id, options)
     else
         # progress bar length_total
         completedSteps := Maximum(0, process.completedSteps);
-        r := completedSteps / process.totalSteps;
+        if process.totalSteps = 0 then
+            r := 1;
+        else
+            r := completedSteps / process.totalSteps;
+        fi;
         length_full := Int(length_total * r);
         length_empty := length_total - length_full;
         # print progress bar
@@ -102,7 +106,11 @@ PB_ProgressBarPrinter.update := function(process, id, options)
         PB_ProgressBarPrinter.printIndefinite(process, id, options);
     else
         # progress bar length_total
-        r := completedSteps / process.totalSteps;
+        if process.totalSteps = 0 then
+            r := 1;
+        else
+            r := completedSteps / process.totalSteps;
+        fi;
         length_full := Int(block.length_total * r);
         # print progress bar
         l := length_full - block.length_full;

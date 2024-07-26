@@ -40,6 +40,7 @@ InstallValue(ProgressPrinter, rec(
 	Pattern := fail,
 	InitialConfiguration := fail,
 	CurProcess := fail,
+	IsActive := true,
 ));
 
 InstallGlobalFunction("SetLayout", function(layout)

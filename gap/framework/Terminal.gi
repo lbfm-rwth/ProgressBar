@@ -25,6 +25,9 @@
 
 InstallGlobalFunction("PB_Print", function(msg)
 	local pos;
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	pos := ProgressPrinter.Cursor.x + Length(msg);
 	if pos > ProgressPrinter.Dimensions.w + 1 then
 		# Error("Trying to print more than the screen width allows to");
@@ -35,16 +38,25 @@ InstallGlobalFunction("PB_Print", function(msg)
 end);
 
 InstallGlobalFunction("PB_SetStyleAndColor", function(r)
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	PB_SetStyle(r.style);
 	PB_SetForegroundColor(r.foregroundColor);
 	PB_SetBackgroundColor(r.backgroundColor);
 end);
 
 InstallGlobalFunction("PB_ResetStyleAndColor", function()
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	WriteAll(STDOut, "\033[0m");
 end);
 
 InstallGlobalFunction("PB_SetStyle", function(mode)
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	if mode = "default" then
 		WriteAll(STDOut, "\033[22m\033[23m\033[24m\033[25m");
 	elif mode = "bold" then
@@ -61,6 +73,9 @@ InstallGlobalFunction("PB_SetStyle", function(mode)
 end);
 
 InstallGlobalFunction("PB_SetForegroundColor", function(color)
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	if color = "default" then
 		WriteAll(STDOut, "\033[39m");
 	elif color = "black" then
@@ -83,6 +98,9 @@ InstallGlobalFunction("PB_SetForegroundColor", function(color)
 end);
 
 InstallGlobalFunction("PB_SetBackgroundColor", function(color)
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	if color = "default" then
 		WriteAll(STDOut, "\033[49m");
 	elif color = "black" then
@@ -105,15 +123,24 @@ InstallGlobalFunction("PB_SetBackgroundColor", function(color)
 end);
 
 InstallGlobalFunction("PB_HideCursor", function()
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	WriteAll(STDOut, "\033[?25l"); # hide cursor
 end);
 
 InstallGlobalFunction("PB_ShowCursor", function()
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	WriteAll(STDOut, "\033[?25h"); # show cursor
 end);
 
 InstallGlobalFunction("PB_MoveCursorDown", function(move)
 	local n, m, x;
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	move := AbsInt(move);
 	n := ProgressPrinter.Cursor.y + move;
 	if ProgressPrinter.Dimensions.h < n then
@@ -133,6 +160,9 @@ InstallGlobalFunction("PB_MoveCursorDown", function(move)
 end);
 
 InstallGlobalFunction("PB_MoveCursorUp", function(move)
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	move := AbsInt(move);
 	WriteAll(STDOut, Concatenation("\033[", String(move), "A")); # move cursor up X lines
 	ProgressPrinter.Cursor.y := ProgressPrinter.Cursor.y - move;
@@ -140,6 +170,9 @@ end);
 
 InstallGlobalFunction("PB_MoveCursorToLine", function(n)
 	local move;
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	move := n - ProgressPrinter.Cursor.y;
 	if move > 0 then
 		PB_MoveCursorDown(move);
@@ -149,12 +182,18 @@ InstallGlobalFunction("PB_MoveCursorToLine", function(n)
 end);
 
 InstallGlobalFunction("PB_MoveCursorRight", function(move)
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	move := AbsInt(move);
 	WriteAll(STDOut, Concatenation("\033[", String(move), "C")); # move cursor right X characters
 	ProgressPrinter.Cursor.x := ProgressPrinter.Cursor.x + move;
 end);
 
 InstallGlobalFunction("PB_MoveCursorLeft", function(move)
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	move := AbsInt(move);
 	WriteAll(STDOut, Concatenation("\033[", String(move), "D")); # move cursor left X characters
 	ProgressPrinter.Cursor.x := ProgressPrinter.Cursor.x - move;
@@ -162,6 +201,9 @@ end);
 
 InstallGlobalFunction("PB_MoveCursorToChar", function(n)
 	local move;
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	move := n - ProgressPrinter.Cursor.x;
 	if move > 0 then
 		PB_MoveCursorRight(move);
@@ -171,11 +213,17 @@ InstallGlobalFunction("PB_MoveCursorToChar", function(n)
 end);
 
 InstallGlobalFunction("PB_MoveCursorToCoordinate", function(x, y)
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	PB_MoveCursorToChar(x);
 	PB_MoveCursorToLine(y);
 end);
 
 InstallGlobalFunction("PB_MoveCursorToProcessEnd", function()
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	PB_MoveCursorToCoordinate(1, 1 + PB_Reduce(
 		ProgressPrinter.RootProcess,
 		{value, proc} -> value + proc.blocks.(ProgressPrinter.Pattern.id).h, 0
@@ -183,20 +231,32 @@ InstallGlobalFunction("PB_MoveCursorToProcessEnd", function()
 end);
 
 InstallGlobalFunction("PB_MoveCursorToStartOfLine", function()
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	WriteAll(STDOut, "\r"); # move cursor to the start of the line
 	ProgressPrinter.Cursor.x := 1;
 end);
 
 InstallGlobalFunction("PB_ClearLine", function()
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	WriteAll(STDOut, "\033[2K"); # erase the entire line
 end);
 
 InstallGlobalFunction("PB_RefreshLine", function()
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	PB_MoveCursorToStartOfLine();
 	PB_ClearLine();
 end);
 
 InstallGlobalFunction("PB_ClearScreen", function()
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	PB_MoveCursorToLine(ProgressPrinter.Dimensions.h);
 	PB_RefreshLine();
 	while ProgressPrinter.Cursor.y > 1 do
@@ -207,6 +267,9 @@ end);
 
 InstallGlobalFunction("PB_ClearProcess", function(process)
 	local block, j;
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	if IsBound(process.blocks) then
 		block := process.blocks.(ProgressPrinter.Pattern.id);
 		PB_MoveCursorToLine(block.y);
@@ -220,6 +283,9 @@ end);
 
 InstallGlobalFunction("PB_ClearBlock", function(block)
 	local empty, j;
+	if not ProgressPrinter.IsActive then
+		return;
+	fi;
 	empty := Concatenation(ListWithIdenticalEntries(block.w, " "));
 	for j in [1 .. block.h] do
 		PB_MoveCursorToCoordinate(block.x, block.y + j - 1);
